@@ -230,23 +230,23 @@ public class ISM {
      * Contains the main running instructions for the program, takes console
      * parameters as an array of strings.
      */
-    public static void main(String[] argz) {
+    public static void main(String[] args) {
         try {
 
             //#####Proper Running of Program#####
             ISM ism = new ISM();
 
 
-            String selectedEVCodes = "EXP,IDA,IPI,IMP,IGI,IEP,ISS,ISO,ISA,ISM,IGC,IBA,IBD,IKR,IRD,RCA,TAS,NAS";
+            //String selectedEVCodes = "EXP,IDA,IPI,IMP,IGI,IEP,ISS,ISO,ISA,ISM,IGC,IBA,IBD,IKR,IRD,RCA,TAS,NAS";
 
 
-            String args[] = {"-obopath", "current.obo", "-goapath",
-                "gene_association.sgd", "-relations", "is_a,part_of",
+           /* String argz[] = {"-obopath", "current.obo", "-goapath",
+                "gene_association.goa_human", "-relations", "is_a,part_of",
                 "-evidencecodes", selectedEVCodes,
                 "-hsm", "Resnik", "-ontology", "all",
                 "-calculationtype", "ism", "-calculationdata", "genewise",
                 "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
-                "all", "-weightedJaccard", "false"};
+                "all", "-weightedJaccard", "false"};*/
 
             // 1.- the parameters are validated
             ism.validateParameters(args);

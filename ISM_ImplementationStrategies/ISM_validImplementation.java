@@ -16,6 +16,7 @@ package ISM_ImplementationStrategies;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import util.TinyLogger;
 
 /**
  *
@@ -68,8 +71,12 @@ public class ISM_validImplementation {
      */
     private boolean termwise;
     private boolean weightedJaccard;
+    /**
+     * Tells whether the HSM is a graph based measure or not
+     */
+    private TinyLogger logger;
 
-    public ISM_validImplementation(GOTerm[] ISM_currentGoTerms, RealMatrix HSM, String[] ISM_currentRelations, Assignment ISM_Annotations, boolean termwise, boolean wJaccard) {
+    public ISM_validImplementation(GOTerm[] ISM_currentGoTerms, RealMatrix HSM, String[] ISM_currentRelations, Assignment ISM_Annotations, boolean termwise, boolean wJaccard, TinyLogger logger) {
 
 
         //0. Utils
@@ -81,7 +88,7 @@ public class ISM_validImplementation {
 
         //0.2 load the affected goterms
         this.subGoTerms = ISM_currentGoTerms;
-        
+
         //0.3 just some variables to keep useful data.
         this.relations = ISM_currentRelations;
         this.maxNumberOfAnnotations = this.getMaxOntology();
@@ -89,7 +96,7 @@ public class ISM_validImplementation {
         //0.4 HSM
         this.HSM = HSM.copy();
 
- 
+
         //0.5.0 fire up the cache for the indices and load it up
         this.goTermIndex = new HashMap<Integer, Integer>();
         //now we load all the indices for the goterms.
@@ -111,18 +118,20 @@ public class ISM_validImplementation {
         //to differentiate between weighted and unweighted jaccard
         this.weightedJaccard = wJaccard;
 
-
         //we load the indices for the annotations only in the case
         //were we compute the genewise similarity
         if (!this.termwise) {
             //this is just to index all the annotations.
             this.proteinIndices = new HashMap<String, Integer>();
-            for (String uniqueAnnotation : this.annotations.getRowIdentifiers()) {
+            for (GOTerm term : this.subGoTerms) {
+                Set<String> proteinsInGoTerm = this.annotations.getProteinsForGOTerm(term.getGOid());
                 int proteinIndex;
                 //the protein already exists in the list.
-                if (!proteinIndices.containsKey(uniqueAnnotation)) {
-                    proteinIndex = this.proteinIndices.size();
-                    this.proteinIndices.put(uniqueAnnotation, proteinIndex);
+                for (String protein : proteinsInGoTerm) {
+                    if (!proteinIndices.containsKey(protein)) {
+                        proteinIndex = this.proteinIndices.size();
+                        this.proteinIndices.put(protein, proteinIndex);
+                    }
                 }
             }
         }
@@ -153,18 +162,22 @@ public class ISM_validImplementation {
         //just set the convergence limit.
         this.epsilon = 0.001;
 
+        this.logger = logger;
     }
 
-    public RealMatrix computeISM() {
+    public RealMatrix computeISM() throws IOException {
         //Step 0. Initialise transition probabilities
+        this.logger.showTimedMessage("Initialise transition probabilities");
         this.initialiseTransitionProbabilities();
+
         //Step 1. Walk!
+        this.logger.showTimedMessage("Walking...");
         this.walk();
         //Step 2. Compute the random wal contribution
-        if (true == this.termwise) {
+        if (this.termwise) {
             this.setRandomWalkContributionTermwise();
         } else {
-            this.setRandomWalkContributionGenewise();
+            this.setRandomWalkContributionGeneWise();
         }
         //Step 3. get the ISM which we return.
         this.setISM();
@@ -264,55 +277,75 @@ public class ISM_validImplementation {
         }
     }
 
-    private void walk() {
+    private void walk() throws IOException {
 
         OpenMapRealMatrix W_star = new OpenMapRealMatrix(this.W);
         double convergence;
         do {
             this.W = W_star.copy();
-            W_star = this.P.multiply(this.W).copy();
+            W_star = this.P.multiply(this.W);
             convergence = W_star.subtract(this.W).getFrobeniusNorm();
+            this.logger.showTimedMessage("\t Convergence difference: " + (new Double(convergence)).toString());
         } while (convergence > this.epsilon);
-        this.W = W_star.copy();
+        this.W = W_star;
     }
 
-    private void setRandomWalkContributionTermwise() {
+    private void setRandomWalkContributionTermwise() throws IOException {
 
-        System.out.println("Submatrix (RWC)");
+        this.logger.showTimedMessage("Submatrix (RWC)");
         this.RWC = this.W.getSubMatrix(this.leafIndices, this.allIndices);
-        System.out.println("Transpose (RWC)");
+        this.logger.showTimedMessage("Transpose (RWC)");
 
         this.RWC = this.RWC.transpose();
-        System.out.println("Submatrix (HSM)");
+        this.logger.showTimedMessage("Submatrix (HSM)");
 
         RealMatrix subHSM = this.HSM.getSubMatrix(this.leafIndices, this.leafIndices);
-        System.out.println("RWC * HSM");
+        this.logger.showTimedMessage("RWC * HSM");
 
         this.RWC = this.RWC.multiply(subHSM);
-        System.out.println("Submatrix (W)");
+        this.logger.showTimedMessage("Submatrix (W)");
 
-        RealMatrix subW = this.W.getSubMatrix(this.leafIndices, this.allIndices);
-        System.out.println("RWC * SubMatrixW");
+        RealMatrix subW = new Array2DRowRealMatrix(this.W.getSubMatrix(this.leafIndices, this.allIndices).getData());
+        this.logger.showTimedMessage("RWC * SubMatrixW");
 
         this.RWC = this.RWC.multiply(subW);
+        this.logger.showTimedMessage("RWC set!");
     }
 
-    private void setRandomWalkContributionGenewise() {
+    private void setRandomWalkContributionGeneWise() throws IOException {
         //0. get matrix A
+        this.logger.showTimedMessage("Getting matrix A");
         RealMatrix A = this.getMatrixA();
         //1. multiply both matrices.
+        this.logger.showTimedMessage("Getting matrix B");
         RealMatrix B = this.W.getSubMatrix(this.leafIndices, this.allIndices).multiply(A);
         //2. calculate the RWC
         //2.0 traverse all the products.
         //set the value for all eht rows for this column and this row
         //for RWC column_index  == row_index
-        for (int i = 0; i < this.RWC.getRowDimension(); i++) {
-            for (int j = i; j < this.RWC.getColumnDimension(); j++) {
-                double jaccardIndex = this.getJaccardIndex(B.getColumn(i), B.getColumn(j));
-                this.RWC.setEntry(i, j, jaccardIndex);
-                this.RWC.setEntry(j, i, jaccardIndex);
+        this.logger.showTimedMessage("Computing RWC matrix as succesive Jaccard indexes");
+        final int N = this.RWC.getRowDimension(), M = this.RWC.getColumnDimension();
+
+        if (this.weightedJaccard) {
+            for (int i = 0; i < N; i++) {
+                double column_i[] = B.getColumn(i);
+                for (int j = i; j < M; j++) {
+                    double jaccardIndex = this.getJaccardIndexWithIC(column_i, B.getColumn(j));
+                    this.RWC.setEntry(i, j, jaccardIndex);
+                    this.RWC.setEntry(j, i, jaccardIndex);
+                }
+            }
+        } else {
+            for (int i = 0; i < N; i++) {
+                double column_i[] = B.getColumn(i);
+                for (int j = i; j < M; j++) {
+                    double jaccardIndex = this.getJaccardIndexWithoutIC(column_i, B.getColumn(j));
+                    this.RWC.setEntry(i, j, jaccardIndex);
+                    this.RWC.setEntry(j, i, jaccardIndex);
+                }
             }
         }
+        this.logger.showTimedMessage("RWC set!");
     }
 
     private RealMatrix getMatrixA() {
@@ -352,17 +385,32 @@ public class ISM_validImplementation {
         return A;
     }
 
-    private double getJaccardIndex(double[] distributionProductOne, double[] distributionProductTwo) {
+    private double getJaccardIndexWithoutIC(final double[] distributionProductOne, final double[] distributionProductTwo) {
+        //0. gather data
+        double combinedSum = 0.0;
+        double sumProductOne = 0.0, sumProductTwo = 0.0;
+        
+        for (int i = 0; i < this.leafIndices.length; i++) {
+            //compute data independently
+            combinedSum += distributionProductOne[i] * distributionProductTwo[i];
+            sumProductOne += distributionProductOne[i];
+            sumProductTwo += distributionProductTwo[i];
+        }
+        //1. compute the jaccard index
+        return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
+    }
+
+    private double getJaccardIndexWithIC(final double[] distributionProductOne, final double[] distributionProductTwo) {
         //0. gather data
         double combinedSum = 0;
         double sumProductOne = 0, sumProductTwo = 0;
-        double IC = 1.0;
+
+        final double invMaxAnnot = 1.0 / this.maxNumberOfAnnotations;
         for (int i = 0; i < this.leafIndices.length; i++) {
 
             //we need to fetch  the information content of the nodes if we use weighted jaccard.
-            if (this.weightedJaccard) {
-                IC = -Math.log(this.numAnnotations.get(this.leafIndices[i]) / this.maxNumberOfAnnotations);
-            }
+            final double IC = -Math.log(this.numAnnotations.get(this.leafIndices[i]) * invMaxAnnot);
+
             //compute data independently
             combinedSum += distributionProductOne[i] * distributionProductTwo[i] * IC;
             sumProductOne += distributionProductOne[i] * IC;
@@ -504,15 +552,12 @@ public class ISM_validImplementation {
     private int getNumGoTerms() {
         return this.subGoTerms.length;
     }
-    
-    private double getMaxOntology()
-   {
-       double max = Double.NEGATIVE_INFINITY;
-       for (GOTerm term : this.subGoTerms) {
-           max = Math.max(max, this.annotations.countNumberOfGenesForGOTerm(term.getGOid()));
-       }
-       return max;
-   }
- 
-    
+
+    private double getMaxOntology() {
+        double max = Double.NEGATIVE_INFINITY;
+        for (GOTerm term : this.subGoTerms) {
+            max = Math.max(max, this.annotations.countNumberOfGenesForGOTerm(term.getGOid()));
+        }
+        return max;
+    }
 }

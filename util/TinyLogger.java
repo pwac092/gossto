@@ -18,6 +18,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
 
 /*
  * A small and not-so-powerful logger
@@ -27,7 +28,7 @@ public class TinyLogger {
 
     private BufferedWriter logwriter; //Used for writing messages to the log file
     private static boolean logging = false;
-
+    
     public TinyLogger() {
     }
 
@@ -56,6 +57,16 @@ public class TinyLogger {
             log(log);
             this.logwriter.close();
         }
+    }
+
+    private String getTimestamp() {
+        return (new Timestamp((new java.util.Date()).getTime())).toString();
+    }
+    
+    public void showTimedMessage(String message) throws IOException {
+        String timestamp = this.getTimestamp();
+        System.out.println("[" + timestamp + "] " + message);
+        this.log("[" + timestamp + "] " + message);
     }
 
     public void showMessage(String message) throws IOException {

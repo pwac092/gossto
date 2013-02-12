@@ -56,9 +56,13 @@ public class HSMInterfacer {
     }
 
     public String[] getComputedGenes() {
-       return this.chosenHSM.getSubSetGenes();
-   }
-    
+        return this.chosenHSM.getSubSetGenes();
+    }
+
+    public boolean isAGraphBasedMeasure() {
+        return chosenHSM.isAGraphBasedMeasure();        
+    }
+
     //Retrieves the specific HSm instance, parameters detailed above the 'getHSMinstance()' method
     public void retrieveHSMinstance(String name, Object[] params) throws IOException {
         HSM hsmInstance = null;
@@ -85,6 +89,7 @@ public class HSMInterfacer {
             System.exit(-1);
         } catch (InvocationTargetException e) {
             this.logwriter.logAndCloseWriter("############ERROR: class " + name + " could not be invoked.");
+            e.getCause().printStackTrace(System.err);
             System.err.println("ERROR: class " + name + " could not be invoked.");
             System.exit(-1);
         } catch (ClassNotFoundException e) {

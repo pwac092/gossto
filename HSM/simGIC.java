@@ -30,8 +30,9 @@ import util.TinyLogger;
 //get max no. of annotations on any one gene
 public class simGIC extends HSM {
 
-    public simGIC(GOTerm[] allTerms, String[] genes, String[][] goIds, GOTerm[][] axis, String[] targets,  Assignment annotations, String[] relations, TinyLogger logw) {
+    public simGIC(GOTerm[] allTerms, String[] genes, String[][] goIds, GOTerm[][] axis, String[] targets, Assignment annotations, String[] relations, TinyLogger logw) {
         super(allTerms, genes, goIds, axis, targets, annotations, relations, logw);
+        isAGraphBasedMeasure = true;
     }
 
     private double getMaxAnnotations() {
@@ -114,7 +115,7 @@ public class simGIC extends HSM {
         //calculate semantic similarity between each gene
         double maxAnno = getMaxAnnotations();
 
-        for (int i = 0; i < NUM_GENES-1; i++) {
+        for (int i = 0; i < NUM_GENES - 1; i++) {
             if (!GeneGroups[i].isEmpty()) {
                 for (int j = i; j < NUM_GENES; j++) {
                     if (!GeneGroups[j].isEmpty()) {

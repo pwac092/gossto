@@ -38,7 +38,7 @@ public class ISMInterfacer {
             ArrayList<GOTerm> userProvidedTerms, String[] GO_relations, String dagChoice, int matrix, TinyLogger logger)
             throws IOException {
 
-        ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, true, false);
+        ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, true, false, logger);
         RealMatrix result = ism.computeISM();
 
         return result;
@@ -49,7 +49,7 @@ public class ISMInterfacer {
             ArrayList<GOTerm> userProvidedTerms, String[] GO_relations, String dagChoice, int matrix, TinyLogger logger, boolean weightedJaccard)
             throws IOException {
 
-        ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, false, weightedJaccard);
+        ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, false, weightedJaccard, logger);
         RealMatrix result = ism.computeISM();
 
         return result;

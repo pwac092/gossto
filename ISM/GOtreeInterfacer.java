@@ -151,7 +151,6 @@ public class GOtreeInterfacer {
 
 
         for (String ontology : this.ontologiesToProcess) {
-
             if (ontology.trim().equalsIgnoreCase("BP")) {
 
                 bp = go.getOntology("biological_process");
@@ -193,11 +192,13 @@ public class GOtreeInterfacer {
             } else if (ontology.trim().equalsIgnoreCase("MF")) {
                 mf = go.getOntology("molecular_function");
                 List<GOTerm> mfAxis = mf.getSetOfTerms();
+                
                 this.mfAxisOrd = new GOTerm[mfAxis.size()];
                 this.mfAxisOrd = orderGOTerms(mfAxis);
 
                 int i = 0;
                 for (GOTerm term : mfAxisOrd) {
+
                     indexMF.put(term.getNumericId(), i);
                     i++;
                 }

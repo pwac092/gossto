@@ -18,14 +18,12 @@ import GOtree.Assignment;
 import GOtree.GOTerm;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
@@ -56,6 +54,7 @@ public abstract class HSM {
     protected final static String[] shortOntologyName = {"BP", "MF", "CC"};
     protected final static String[] longOntologyName = {"Biological Process", "Molecular Function", "Cellular Component"};
     private String[] computedGenes;
+    protected boolean isAGraphBasedMeasure;
 
     // Constructor for HSM genewise, takes a listing of all GO terms, a listing of all genes, a mapping 
     // of gene IDs to GO terms, whether or not a log file is to be written, the axis for the adjacencies, any specific terms, 
@@ -105,6 +104,8 @@ public abstract class HSM {
                 this.indexFromGOTerm.put(term.getGOid(), j);
             }
         }
+
+        isAGraphBasedMeasure = false; // not a graph-based measure by default
     }
 
     //Returns the largest annotation value for normalisation purposes
@@ -113,11 +114,10 @@ public abstract class HSM {
         double[] maxAnnoNo = new double[]{0, 0, 0};
         for (int i = 0; i < 3; ++i) {
             for (String term : annotations.getColumnIdentifiers()) {
-                if (this.ontologyFromGOTerm.get(term) == i) {
+                if (this.ontologyFromGOTerm.containsKey(term) && this.ontologyFromGOTerm.get(term) == i) {
                     maxAnnoNo[i] = Math.max(maxAnnoNo[i], annotations.countNumberOfGenesForGOTerm(term));
                 }
             }
-            System.out.println(maxAnnoNo[i]);
         }
         return maxAnnoNo;
     }
@@ -199,6 +199,18 @@ public abstract class HSM {
         }
     }
 
+    /**
+     * This method tells if the HSM is a graph-based similarity measure
+     * (Pesquita et al, 2008). By default this is false (the variable
+     * "isAGraphBasedMeasure" should change its value to true for those cases in
+     * which we are dealing with such a measure (e.g. simGIC).
+     *
+     * @returns true if the measure is a graph-based one, false otherwise
+     */
+    public boolean isAGraphBasedMeasure() {
+        return isAGraphBasedMeasure;
+    }
+
     protected RealMatrix geneWiseSimilarityByMaximum(int ontology) throws IOException, OutOfMemoryError {
 
         Map<String, ArrayList<Integer>> goIdsPerGene = new HashMap<String, ArrayList<Integer>>();
@@ -222,19 +234,18 @@ public abstract class HSM {
         ArrayList<String> selectedGenes = new ArrayList<String>(goIdsPerGene.keySet());
         //sort the genes in alphabetical order.
         Collections.sort(selectedGenes);
-        
-        
+
+
         final int NUM_GENES_ONTOLOGY = selectedGenes.size();
 
         this.computedGenes = new String[NUM_GENES_ONTOLOGY];
         selectedGenes.toArray(this.computedGenes);
-        
+
         //compute the semantic similarity
         RealMatrix termWise = this.calculateTermWiseSemanticSimilarity(ontology);
         logwriter.showMessage("Number of genes for " + shortOntologyName[ontology] + ": " + selectedGenes.size());
-        
+
         RealMatrix result = new Array2DRowRealMatrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
-        result.scalarAdd(-1);
         
         //which pair of terms annoating the genes is the most similar
         for (int i = 0; i < NUM_GENES_ONTOLOGY; ++i) {

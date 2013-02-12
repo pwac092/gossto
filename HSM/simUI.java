@@ -24,13 +24,15 @@ import util.TinyLogger;
 
 /**
  *
- * @author Samuel Heron
+ * @author Samuel Heron, Alfonso E. Romero
+ * 
  */
 //Implements the simUI semantic similarity measure
 public class simUI extends HSM {
 
     public simUI(GOTerm[] allTerms, String[] genes, String[][] goIds, GOTerm[][] axis, String[] targets, Assignment annotations, String[] relations, TinyLogger logw) {
         super(allTerms, genes, goIds, axis, targets, annotations, relations, logw);
+        isAGraphBasedMeasure = true;
     }
 
     @Override
@@ -93,4 +95,5 @@ public class simUI extends HSM {
     public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }
