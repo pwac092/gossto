@@ -16,8 +16,9 @@ For Yang's et. al description of the method:
 
 If you use GOSSTO, please cite it.
 
--> GOSSTO: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology
-   To appear in Application Notes in Bioinformatics.
+-> GOSSTO: an extendable, command-line and web tool for for calculating semantic similarities on the Gene Ontology
+   Alfonso E. Romero, Horacio Caniza Vierci, Samuel Heron, Haixuan Yang, Marco Frasca, Giorgio Valentini and Alberto Paccanaro.
+   Submitted to _Application Notes in Bioinformatics_
 
 PaccanaroLab: http://www.paccanarolab.org
 Valentini Lab: http://homes.di.unimi.it/~valenti/index.html
