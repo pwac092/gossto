@@ -149,6 +149,10 @@ public abstract class HSM {
         return (double) annoCount / maxAnnotationNumber[dag];
     }
 
+    public int getNumGOTermsPerOntology(int ontology) {
+        return this.numGOtermsPerOntology[ontology];
+    }
+
     //returns a GOTerm's index from a given String GO ID
     protected int getOntologyFromGOTerm(String id) {
         if (this.ontologyFromGOTerm.containsKey(id)) {
@@ -246,7 +250,7 @@ public abstract class HSM {
         logwriter.showMessage("Number of genes for " + shortOntologyName[ontology] + ": " + selectedGenes.size());
 
         RealMatrix result = new Array2DRowRealMatrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
-        
+
         //which pair of terms annoating the genes is the most similar
         for (int i = 0; i < NUM_GENES_ONTOLOGY; ++i) {
             //get genes annotating the first gene

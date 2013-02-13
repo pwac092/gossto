@@ -317,6 +317,38 @@ public class IoValidation {
                 out.close();
                 logger.log("Printing complete; Output File: " + outputFileName);
                 System.out.println("Printing COMPLETE; Output File: " + outputFileName);
+            } else {
+                
+                logger.showMessage("\n  ERROR: the specified annotation file does not have enough data to produce a semantic similarity matrix for this ontology.\n");
+                logger.showMessage("  This may be due to one of the following reasons:\n\n");
+                logger.showMessage(" For the termwise case:\n");
+                logger.showMessage("  - There are not enough annotations (possibly none) with the specified evidence codes (try adding more, especially IEA).");
+                logger.showMessage("  - The organism has annotations, but the subset of GO terms you have selected contains no annotations (try being less restrictive).");
+                logger.showMessage(" For the genewise case:\n");
+                logger.showMessage("  - There are not enough genes (possibly none) annotated with valid GO terms (try selecting a different organism).");
+                logger.showMessage("  - The organism has annotations, but the subset of genes you selected contains no associated GO terms (try being less restrictive).");
+                               
+                
+                BufferedWriter out = new BufferedWriter(new FileWriter(outputFileName), 32768);                
+                out.write("ERROR: the specified annotation file does not have enough data to produce a semantic similarity matrix for this ontology.");
+                out.newLine();
+                out.newLine();
+                out.write("This may be due to one of the following reasons:");
+                out.newLine();
+                out.write("For the termwise case: ");
+                out.newLine();
+                out.write("- There are not enough annotations (possibly none) with the specified evidence codes (try adding more, especially IEA).");
+                out.newLine();
+                out.write("- The organism has annotations, but the subset of GO terms you have selected contains no annotations (try being less restrictive).");
+                out.newLine();
+                out.write("For the genewise case: ");
+                out.newLine();
+                out.write("- There are not enough genes (possibly none) annotated with valid GO terms (try selecting a different organism).");
+                out.newLine();
+                out.write("- The organism has annotations, but the subset of genes you selected contains no associated GO terms (try being less restrictive).");
+                out.newLine();
+                out.close();
+                
             }
         } catch (java.lang.OutOfMemoryError oome) {
             logger.logAndCloseWriter("############## ERROR: Out of memory Error of type: " + oome.getMessage());

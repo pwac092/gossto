@@ -98,6 +98,11 @@ public class GOtreeInterfacer {
             System.exit(-1);
         }
     }
+    
+    public boolean annotationFileIsEmpty()
+    {
+        return this.annotations.sizeTerms() == 0;
+    }
 
     //parses the OBO file specified by 'OBOpath'
     private void generate_GO(String OBOpath) throws FileNotFoundException, IOException {
@@ -192,7 +197,7 @@ public class GOtreeInterfacer {
             } else if (ontology.trim().equalsIgnoreCase("MF")) {
                 mf = go.getOntology("molecular_function");
                 List<GOTerm> mfAxis = mf.getSetOfTerms();
-                
+
                 this.mfAxisOrd = new GOTerm[mfAxis.size()];
                 this.mfAxisOrd = orderGOTerms(mfAxis);
 
@@ -322,26 +327,31 @@ public class GOtreeInterfacer {
         }
         final int counter = interesting.size();
 
-        OpenMapRealMatrix stripped = new OpenMapRealMatrix(counter, counter);
-        //strip matrix down
-        int rowIndex = 0;
-        //final int m = adjacency.getColumnDimension();
-        for (int i : interesting) {
-            int columnIndex = 0;
-            //if (annotations.countNumberOfGenesForGOTerm(axis[i].getGOid()) != 0) {
-            //if (this.getNumAnnotationsForGOTerm(axis[i]) != 0) {
-            //for (int j = 0; j < m; j++) {
-            for (int j : interesting) {
-                //if (this.getNumAnnotationsForGOTerm(axis[j]) != 0) {
-                //if (annotations.countNumberOfGenesForGOTerm(axis[j].getGOid()) != 0) {                
-                stripped.setEntry(rowIndex, columnIndex, adjacency.getEntry(i, j));
-                columnIndex++;
+        if (counter > 0) {
+
+            OpenMapRealMatrix stripped = new OpenMapRealMatrix(counter, counter);
+            //strip matrix down
+            int rowIndex = 0;
+            //final int m = adjacency.getColumnDimension();
+            for (int i : interesting) {
+                int columnIndex = 0;
+                //if (annotations.countNumberOfGenesForGOTerm(axis[i].getGOid()) != 0) {
+                //if (this.getNumAnnotationsForGOTerm(axis[i]) != 0) {
+                //for (int j = 0; j < m; j++) {
+                for (int j : interesting) {
+                    //if (this.getNumAnnotationsForGOTerm(axis[j]) != 0) {
+                    //if (annotations.countNumberOfGenesForGOTerm(axis[j].getGOid()) != 0) {                
+                    stripped.setEntry(rowIndex, columnIndex, adjacency.getEntry(i, j));
+                    columnIndex++;
+                    //}
+                }
+                rowIndex++;
                 //}
             }
-            rowIndex++;
-            //}
+            return stripped;
+        } else {
+            return null;
         }
-        return stripped;
     }
     //remove terms from the axis that don't have annotations for the axis; 'axis'
 

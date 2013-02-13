@@ -1,9 +1,8 @@
 Licensing:
     GOSSTO: Gene Ontology Semantic Similarity TOol' is a tool for the calculation of semantic 
     similarity values using genetic data provided by the Gene Ontology Project
-    Authors : Samuel Heron <>(Packages: HSM)
-     		  Alfonso E. Romero <alfonsoeromer@gmail.com> (Packages: AnnotationFileUtilities, GOtree & GOtree.PropagationStrategies)
-              Horacio Caniza Vierci <h.j.canizavierci@cs.rhul.ac.uk> (Packages: ISM, ISM_validImplementation
+    Authors : Samuel Heron <h>(Packages: HSM, ISM & ISM_Implementation Strategies)
+     		  Alfonso E. Romero <> (Packages: AnnotationFileUtilities, GOtree & GOtree.PropagationStrategies)
 
     GOSSTO Copyright (C) 2012 Samuel Heron
 

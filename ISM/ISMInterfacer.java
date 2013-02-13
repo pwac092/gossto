@@ -38,20 +38,29 @@ public class ISMInterfacer {
             ArrayList<GOTerm> userProvidedTerms, String[] GO_relations, String dagChoice, int matrix, TinyLogger logger)
             throws IOException {
 
-        ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, true, false, logger);
-        RealMatrix result = ism.computeISM();
+        if (HSM == null) {
+            return null;
+        } else {
 
-        return result;
-    } 
+            ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, true, false, logger);
+            RealMatrix result = ism.computeISM();
+
+            return result;
+        }
+    }
 
     //get genewise ism data, the parameters for this method match those of the ISM Implementation constructor. For more detail look in the relevant class.
     public RealMatrix getGeneISMs(RealMatrix[] adjMatrices, GOTerm[][] matrixAxis, RealMatrix HSM, Assignment annotations,
             ArrayList<GOTerm> userProvidedTerms, String[] GO_relations, String dagChoice, int matrix, TinyLogger logger, boolean weightedJaccard)
             throws IOException {
+        if (HSM == null) {
+            return null;
+        } else {
 
-        ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, false, weightedJaccard, logger);
-        RealMatrix result = ism.computeISM();
+            ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, false, weightedJaccard, logger);
+            RealMatrix result = ism.computeISM();
 
-        return result;
+            return result;
+        }
     }
 }

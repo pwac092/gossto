@@ -60,7 +60,7 @@ public class HSMInterfacer {
     }
 
     public boolean isAGraphBasedMeasure() {
-        return chosenHSM.isAGraphBasedMeasure();        
+        return chosenHSM.isAGraphBasedMeasure();
     }
 
     //Retrieves the specific HSm instance, parameters detailed above the 'getHSMinstance()' method
@@ -110,6 +110,10 @@ public class HSMInterfacer {
 
     //Retrieves the HSM results, the parameter specifying whether we want to force it to return the gene simiarity results (only required fro printing)
     public RealMatrix returnTermWiseResults(int matrix) throws IOException {
+        if (chosenHSM.getNumGOTermsPerOntology(matrix) == 0) {
+            return null;
+        }
+
         if (this.targets == null || this.targets.isEmpty()) {
             return chosenHSM.calculateTermWiseSemanticSimilarity(matrix);
         } else {
