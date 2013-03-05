@@ -17,6 +17,7 @@ package HSM;
 import GOtree.Assignment;
 import GOtree.GOTerm;
 import java.io.IOException;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
@@ -45,7 +46,7 @@ public class Lin extends HSM {
         double M = Double.NEGATIVE_INFINITY; //getting M
 
         final int N = numGOtermsPerOntology[ontology];
-        OpenMapRealMatrix result = new OpenMapRealMatrix(N, N);
+        RealMatrix result = new Array2DRowRealMatrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {

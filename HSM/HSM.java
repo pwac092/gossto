@@ -221,7 +221,7 @@ public abstract class HSM {
 
         for (String gene : this.annotations.getRowIdentifiers()) {
             for (String goTerm : this.annotations.getGOTermScoresForProteinId(gene).keySet()) {
-                if (this.ontologyFromGOTerm.get(goTerm) == ontology) {
+                if (this.ontologyFromGOTerm.containsKey(goTerm) && this.ontologyFromGOTerm.get(goTerm) == ontology) {
                     //goterm index in HSM matrix.
                     int id = this.indexFromGOTerm.get(goTerm);
                     //is the gene already in the structure?
