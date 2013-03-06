@@ -18,11 +18,15 @@ import GOtree.Assignment;
 import GOtree.GOTerm;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
@@ -215,22 +219,48 @@ public abstract class HSM {
         return isAGraphBasedMeasure;
     }
 
+    protected double matrixMax(final RealMatrix mat) {
+        double maxi = Double.NEGATIVE_INFINITY;
+        final int rows = mat.getRowDimension();
+        final int cols = mat.getColumnDimension();
+        
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                double v = mat.getEntry(i, j);
+                maxi = maxi < v ? v : maxi;
+            }
+        }
+        return maxi;
+    }
+
     protected RealMatrix geneWiseSimilarityByMaximum(int ontology) throws IOException, OutOfMemoryError {
-
-        Map<String, ArrayList<Integer>> goIdsPerGene = new HashMap<String, ArrayList<Integer>>();
-
+        Map<String, int[]> goIdsPerGene = new HashMap<String, int[]>();
+        
+        this.logwriter.showMessage("Extracting GO term ids associated to each gene... ");
         for (String gene : this.annotations.getRowIdentifiers()) {
+
+            Set<Integer> ids = new HashSet<Integer>();
+
             for (String goTerm : this.annotations.getGOTermScoresForProteinId(gene).keySet()) {
+
                 if (this.ontologyFromGOTerm.containsKey(goTerm) && this.ontologyFromGOTerm.get(goTerm) == ontology) {
                     //goterm index in HSM matrix.
                     int id = this.indexFromGOTerm.get(goTerm);
-                    //is the gene already in the structure?
-                    if (!goIdsPerGene.containsKey(gene)) {
-                        goIdsPerGene.put(gene, new ArrayList<Integer>());
-                    }
-                    //no, then add it.
-                    goIdsPerGene.get(gene).add(id);
+                    ids.add(id);
                 }
+            }
+
+            if (!ids.isEmpty()) {
+
+                int arrayIds[] = new int[ids.size()];
+                int i = 0;
+                for (int val : ids) {
+                    arrayIds[i] = val;
+                    i++;
+                }
+
+                Arrays.sort(arrayIds);
+                goIdsPerGene.put(gene, arrayIds);
             }
         }
 
@@ -239,7 +269,6 @@ public abstract class HSM {
         //sort the genes in alphabetical order.
         Collections.sort(selectedGenes);
 
-
         final int NUM_GENES_ONTOLOGY = selectedGenes.size();
 
         this.computedGenes = new String[NUM_GENES_ONTOLOGY];
@@ -247,25 +276,22 @@ public abstract class HSM {
 
         //compute the semantic similarity
         RealMatrix termWise = this.calculateTermWiseSemanticSimilarity(ontology);
-        logwriter.showMessage("Number of genes for " + shortOntologyName[ontology] + ": " + selectedGenes.size());
-
+     
         RealMatrix result = new Array2DRowRealMatrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
 
         //which pair of terms annoating the genes is the most similar
+        
         for (int i = 0; i < NUM_GENES_ONTOLOGY; ++i) {
             //get genes annotating the first gene
-            ArrayList<Integer> goTerms_i = goIdsPerGene.get(selectedGenes.get(i));
+            final int[] goTerms_i = goIdsPerGene.get(selectedGenes.get(i));
+            
             for (int j = i; j < NUM_GENES_ONTOLOGY; ++j) {
                 //get genes annotating the second gene
-                ArrayList<Integer> goTerms_j = goIdsPerGene.get(selectedGenes.get(j));
-                double max = Double.NEGATIVE_INFINITY;
-                //compute all possible pairs and select the maximun similarity
-                for (int k : goTerms_i) {
-                    for (int l : goTerms_j) {
-                        max = Math.max(max, termWise.getEntry(k, l));
-                    }
-                }
-                // set matrix
+                final int[] goTerms_j = goIdsPerGene.get(selectedGenes.get(j));
+                                
+                double max = this.matrixMax(termWise.getSubMatrix(goTerms_i, goTerms_j));
+
+                // set matrix values
                 result.setEntry(i, j, max);
                 result.setEntry(j, i, max);
             }

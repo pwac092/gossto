@@ -487,7 +487,7 @@ public class TerminalInterface {
         System.out.println("Valentini Lab: http://homes.di.unimi.it/~valenti/index.html");
         System.out.println("********************************************************************************************************************");
         System.out.println("--------------------------------------------------------------------------------------------------------------------");
-        System.out.println("GOSSTO  Copyright (C) 2012  Samuel Heron");
+        System.out.println("GOSSTO  Copyright (C) 2012  Samuel Heron, Alfonso E. Romero");
         System.out.println("This program comes with ABSOLUTELY NO WARRANTY; for details type `--getw' after the Jar execution statement.");
         System.out.println("This is free software, and you are welcome to redistribute it");
         System.out.println("under certain conditions; see the full GNU GPL licence for details.");

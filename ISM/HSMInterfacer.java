@@ -23,8 +23,11 @@ import HSM.HSM;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
@@ -44,15 +47,17 @@ public class HSMInterfacer {
     private HSM chosenHSM;
     private final Set<GOTerm> targets;
     private final GOTerm[][] matrixAxis;
-
+    private final String[] targetGenes;
+    
     /**
      * Constructor: Instantiates the log file variable if a log file is to be
      * written
      */
-    public HSMInterfacer(TinyLogger logw, Set<GOTerm> targets, GOTerm[][] matrixAxis) {
+    public HSMInterfacer(TinyLogger logw, Set<GOTerm> targets, GOTerm[][] matrixAxis, String [] targetGenes) {
         this.logwriter = logw;
         this.targets = targets;
         this.matrixAxis = matrixAxis;
+        this.targetGenes = targetGenes;
     }
 
     public String[] getComputedGenes() {
@@ -105,12 +110,22 @@ public class HSMInterfacer {
     }
 
     public RealMatrix returnGeneWiseResults(int matrix) throws IOException {
-        return this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix);
+        if (chosenHSM.getNumGOTermsPerOntology(matrix) == 0) {
+            // this case might happen if the organism has no annotation in that ontology
+            return null;
+        }
+
+        if (this.targetGenes == null || this.targetGenes.length == 0) {
+            return this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix);
+        } else {
+            return returnTrimmedMatrixForGenes(this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix));
+        }
     }
 
     //Retrieves the HSM results, the parameter specifying whether we want to force it to return the gene simiarity results (only required fro printing)
     public RealMatrix returnTermWiseResults(int matrix) throws IOException {
         if (chosenHSM.getNumGOTermsPerOntology(matrix) == 0) {
+            // this case might happen if the organism has no annotation in that ontology
             return null;
         }
 
@@ -119,6 +134,42 @@ public class HSMInterfacer {
         } else {
             return returnTrimmedMatrix(this.chosenHSM.calculateTermWiseSemanticSimilarity(matrix), matrix);
         }
+    }
+
+    private RealMatrix returnTrimmedMatrixForGenes(RealMatrix in) {
+        RealMatrix trimmedMatrix;
+        trimmedMatrix = null;
+
+        int size = 0, rowInd = 0, colInd = 0;
+        
+        Set<String> selGenez = new HashSet<String>();
+        selGenez.addAll(Arrays.asList(this.targetGenes));       
+        String[] allGenes = this.chosenHSM.getSubSetGenes();
+        
+        for (int i = 0; i < in.getRowDimension(); i++) {
+            if (selGenez.contains(allGenes[i])) {
+                ++size;
+            }
+        }
+
+        if (size > 0) {
+            trimmedMatrix = new Array2DRowRealMatrix(size, size);
+            for (int i = 0; i < in.getRowDimension(); i++) {
+
+                if (selGenez.contains(allGenes[i])) {
+                    for (int j = 0; j < in.getRowDimension(); j++) {
+                        if (selGenez.contains(allGenes[j])) {
+                            trimmedMatrix.setEntry(rowInd, colInd, in.getEntry(i, j));
+                            colInd++;
+                        }
+                    }
+                    colInd = 0;
+                    rowInd++;
+                }
+            }
+        }
+
+        return trimmedMatrix;
     }
 
     private RealMatrix returnTrimmedMatrix(RealMatrix in, int matrix) {
@@ -132,7 +183,7 @@ public class HSMInterfacer {
             }
         }
         if (size > 0) {
-            trimmedMatrix = new OpenMapRealMatrix(size, size);
+            trimmedMatrix = new Array2DRowRealMatrix(size, size);
             for (int i = 0; i < in.getRowDimension(); i++) {
                 if (targets.contains(matrixAxis[matrix][i])) {
                     for (int j = 0; j < in.getRowDimension(); j++) {

@@ -203,23 +203,43 @@ public class ISM {
         // converts chosen this.goIDs (if any) from Strings to a list of GO terms 
         // and validate them simultaneously
         ArrayList<GOTerm> goIDsAsGOTerm = new ArrayList<GOTerm>();
+        ArrayList<String> termsNotFound = new ArrayList<String>();
         if (this.goIDs != null) {
             for (String id : this.goIDs) {
+                boolean termFound = false;
                 SEARCHING:
                 for (int m = 0; m < 3; m++) {
                     for (int i = 0; i < matrixAxis[m].length; i++) {
                         if (id.equals(matrixAxis[m][i].getGOid())) {
                             goIDsAsGOTerm.add(matrixAxis[m][i]);
+                            termFound = true;
                             break SEARCHING;
                         }
                     }
                 }
+                if (!termFound) {
+                    termsNotFound.add(id);
+                }
             }
-            if (this.goIDs.length != goIDsAsGOTerm.size()) {
-                logger.logAndCloseWriter("############ ERROR: Invalid GOTerms found");
-                System.err.println("ERROR: One or more goterm IDs entered does not exist");
-                System.exit(-1);
+            if (!termsNotFound.isEmpty()) {
+                int num = termsNotFound.size();
+                if (num > 1) {
+                    logger.showMessage("Warning: " + num + " of the specified GO terms could not be found. Details:");
+                } else {
+                    logger.showMessage("Warning: one of the specified GO terms could not be found. Details:");
+                }
+                for (String term : termsNotFound) {
+                    logger.showMessage("\t+ " + term);
+                }
             }
+
+
+            /*
+             if (this.goIDs.length != goIDsAsGOTerm.size()) {
+             logger.logAndCloseWriter("############ ERROR: Invalid GOTerms found");
+             System.err.println("ERROR: One or more goterm IDs entered do not exist");
+             System.exit(-1);
+             }*/
         }
 
         logger.log("Terms validated");
@@ -240,13 +260,13 @@ public class ISM {
             //String selectedEVCodes = "EXP,IDA,IPI,IMP,IGI,IEP,ISS,ISO,ISA,ISM,IGC,IBA,IBD,IKR,IRD,RCA,TAS,NAS";
 
 
-           /* String argz[] = {"-obopath", "current.obo", "-goapath",
-                "gene_association.goa_human", "-relations", "is_a,part_of",
-                "-evidencecodes", selectedEVCodes,
-                "-hsm", "Resnik", "-ontology", "all",
-                "-calculationtype", "ism", "-calculationdata", "genewise",
-                "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
-                "all", "-weightedJaccard", "false"};*/
+            /* String argz[] = {"-obopath", "current.obo", "-goapath",
+             "gene_association.goa_human", "-relations", "is_a,part_of",
+             "-evidencecodes", selectedEVCodes,
+             "-hsm", "Resnik", "-ontology", "all",
+             "-calculationtype", "ism", "-calculationdata", "genewise",
+             "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
+             "all", "-weightedJaccard", "false"};*/
 
             // 1.- the parameters are validated
             ism.validateParameters(args);
@@ -348,7 +368,8 @@ public class ISM {
     private HSMInterfacer buildsHSMInterfacer(Object[] params, Set<GOTerm> targets, GOTerm[][] matrixAxis)
             throws IOException {
         //initialise the HSM interfacer
-        HSMInterfacer hsmi = new HSMInterfacer(logger, targets, matrixAxis);
+        
+        HSMInterfacer hsmi = new HSMInterfacer(logger, targets, matrixAxis, this.geneIDs);
         logger.log("HSM_Interfacer instantiated");
 
         //initialise an instance of the required HSM method
