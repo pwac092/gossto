@@ -18,7 +18,7 @@ import GOtree.Assignment;
 import GOtree.GOTerm;
 import java.io.IOException;
 import java.util.HashSet;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
@@ -43,44 +43,9 @@ public class simGIC extends HSM {
                 maxAnnoNo = (double) annotations.countNumberOfGenesForGOTerm(term);
             }
         }
-        //}
         return maxAnnoNo;
     }
 
-    //Fetches the GOTerm instance of a term from its ID
-    /*
-     private GOTerm getGOTerm(String id) {
-     String bp, mf;
-     bp = id + "biological_process";
-     mf = id + "molecular_function";
-     if (idsAndDags.contains(bp) == true) {
-     for (int i = 0; i < matrixAxis[0].length; i++) {
-     if (matrixAxis[0][i].getGOid().equals(id) == true) {
-     return matrixAxis[0][i];
-     }
-     }
-     } else if (idsAndDags.contains(mf) == true) {
-     for (int i = 0; i < matrixAxis[1].length; i++) {
-     if (matrixAxis[1][i].getGOid().equals(id) == true) {
-     return matrixAxis[1][i];
-     }
-     }
-     } else {
-     for (int i = 0; i < matrixAxis[2].length; i++) {
-     if (matrixAxis[2][i].getGOid().equals(id) == true) {
-     return matrixAxis[2][i];
-     }
-     }
-     }
-     try {
-     this.logwriter.logAndCloseWriter("#######ERROR: GO Term doesn't exist");
-     } catch (IOException e) {
-     e.printStackTrace(System.err);
-     }
-     System.err.println("ERROR: GO term doesn't exist");
-     System.exit(-1);
-     return new GOTerm(null, null);
-     }*/
     @Override
     public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -90,7 +55,7 @@ public class simGIC extends HSM {
     public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         System.out.println("#####SimGIC HSM#####");
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new OpenMapRealMatrix(N, N);
+        RealMatrix result = new Array2DRowRealMatrix(N, N);
         final int NUM_GENES = this.genes.length;
 
         // GeneGoups for any gene has all the ancestors of the GO terms annotated

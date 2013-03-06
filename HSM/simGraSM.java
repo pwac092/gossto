@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
@@ -162,7 +162,7 @@ public class simGraSM extends HSM {
     public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         assert (ontology >= 0 && ontology < 3);
         final int N = numGOtermsPerOntology[ontology];
-        OpenMapRealMatrix result = new OpenMapRealMatrix(N, N);
+        RealMatrix result = new Array2DRowRealMatrix(N, N);
 
         for (int i = 0; i < N - 1; i++) {
             for (int j = i; j < N; j++) { //Semantic similarity calculated based upon disjunctive common ancestors

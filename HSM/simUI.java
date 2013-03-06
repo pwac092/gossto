@@ -18,7 +18,7 @@ import GOtree.Assignment;
 import GOtree.GOTerm;
 import java.io.IOException;
 import java.util.HashSet;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
@@ -39,7 +39,7 @@ public class simUI extends HSM {
     public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         System.out.println("#####SimUI HSM#####");
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new OpenMapRealMatrix(N, N);
+        RealMatrix result = new Array2DRowRealMatrix(N, N);
         final int NUM_GENES = this.genes.length;
 
         HashSet<GOTerm> GeneGroups[] = new HashSet[NUM_GENES];

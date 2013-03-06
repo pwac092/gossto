@@ -18,7 +18,6 @@ import GOtree.Assignment;
 import GOtree.GOTerm;
 import java.io.IOException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
