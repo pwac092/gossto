@@ -1,16 +1,16 @@
-/*This file is part of GOSSTO.
- GOSSTO is free software: you can redistribute it and/or modify
+/*This file is part of GOssTo.
+ GOssTo is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- GOSSTO is distributed in the hope that it will be useful,
+ GOssTo is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with GOSSTO.  If not, see <http://www.gnu.org/licenses/>.
+ along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -326,7 +326,7 @@ public class IoValidation {
                 logger.showMessage("  - There are not many genes (possibly none) annotated to valid entries (try selecting a different organism).");
                 logger.showMessage("  - The organism has annotations, but the subset of genes you selected contains no associated GO terms (try being less restrictive).");
                 logger.showMessage("  We cannot do much for solving your problem. We recommend you to select a better organism,");
-                logger.showMessage("  or maybe download GOSSTO in its Java version from our webpage ( http://www.paccanarolab.org/gossto/ ),");
+                logger.showMessage("  or maybe download GOssTo in its Java version from our webpage ( http://www.paccanarolab.org/gossto/ ),");
                 logger.showMessage("  and tweak it a bit to cope with this annotation file.\n\n");
                 
                 
@@ -346,7 +346,7 @@ public class IoValidation {
                 out.newLine();
                 out.write("We cannot do much for solving your problem. We recommend you to select a better organism,");
                 out.newLine();
-                out.write("or maybe download GOSSTO in its Java version from our webpage ( http://www.paccanarolab.org/gossto/ ),");
+                out.write("or maybe download GOssTo in its Java version from our webpage ( http://www.paccanarolab.org/gossto/ ),");
                 out.write(" and tweak it a bit to cope with this annotation file.");
                 out.close();
                 

@@ -1,16 +1,16 @@
-/*This file is part of GOSSTO.
- GOSSTO is free software: you can redistribute it and/or modify
+/*This file is part of GOssTo.
+ GOssTo is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- GOSSTO is distributed in the hope that it will be useful,
+ GOssTo is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with GOSSTO.  If not, see <http://www.gnu.org/licenses/>.
+ along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -68,10 +68,10 @@ public class ConsoleParameterValidator extends ParameterValidator {
             //administrative parameters
             if (cmd.hasOption("help")) //prints list of parameter labels with description
             {
-                formatter.printHelp("GOSSTO", paramOptions);
+                formatter.printHelp("GOssTo", paramOptions);
                 System.exit(-1);
             }
-            if (cmd.hasOption("version")) //prints GOSSTO version
+            if (cmd.hasOption("version")) //prints GOssTo version
             {
                 System.out.println("Version : " + paramOptions.getOption("version").getDescription());
                 System.exit(-1);

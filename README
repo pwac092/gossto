@@ -5,18 +5,18 @@
     \/_____/ \/_____/ \/_____/ \/_____/   \/_/  \/_____/ 
 
 
-Welcome to GOSSTO, the Gene Ontology Semantic Similarity Tool!
+Welcome to GOssTo, the Gene Ontology Semantic Similarity Tool!
 
-GOSSTO is a software system for calculating semantic similarities between gene products in the Gene Ontology.
-GOSSTO implements the Random Walk Contribution, improving the accuracy of similarity measures.
+GOssTo is a software system for calculating semantic similarities between gene products in the Gene Ontology.
+GOssTo implements the Random Walk Contribution, improving the accuracy of similarity measures.
 For Yang's et. al description of the method:
 
 -> Improving GO semantic similarity measures by exploring the ontology beneath the terms and modelling uncertainty
    Bioinformatics, vol. 28, iss. 10, pp. 1383-1389, 2012.
 
-If you use GOSSTO, please cite it.
+If you use GOssTo, please cite it.
 
--> GOSSTO: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology
+-> GOssTo: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology
    To appear in Application Notes in Bioinformatics.
 
 PaccanaroLab: http://www.paccanarolab.org

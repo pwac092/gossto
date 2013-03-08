@@ -1,16 +1,16 @@
-/*This file is part of GOSSTO.
- GOSSTO is free software: you can redistribute it and/or modify
+/*This file is part of GOssTo.
+ GOssTo is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- GOSSTO is distributed in the hope that it will be useful,
+ GOssTo is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with GOSSTO.  If not, see <http://www.gnu.org/licenses/>.
+ along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -456,18 +456,18 @@ public class TerminalInterface {
 
         System.out.println("#####Printing Complete#####");
         System.out.println();
-        System.out.println("Thank you for using GOSSTO.");
+        System.out.println("Thank you for using GOssTo.");
     }
 
-    //welcome message displayed on launch of GOSSTO, contains GNU GPL info
+    //welcome message displayed on launch of GOssTo, contains GNU GPL info
     public void welcomer() {
         System.out.println();
         System.out.println("******************************************************************************************************************");
 
-        System.out.println("Welcome to GOSSTO the Gene Ontology Semantic Similarity Tool!");
-        System.out.print("GOSSTO is a software system for ");
+        System.out.println("Welcome to GOssTo the Gene Ontology Semantic Similarity Tool!");
+        System.out.print("GOssTo is a software system for ");
         System.out.println("calculating semantic similarities between gene products in the Gene Ontology.");
-        System.out.print("GOSSTO implements the Random Walk Contribution, improving the accuracy ");
+        System.out.print("GOssTo implements the Random Walk Contribution, improving the accuracy ");
         System.out.print("of similarity measures.");
 
         System.out.println();
@@ -477,9 +477,9 @@ public class TerminalInterface {
         System.out.println("Bioinformatics, vol. 28, iss. 10, pp. 1383-1389, 2012.");
 
         System.out.println();
-        System.out.println("If you use GOSSTO, please cite it.");
+        System.out.println("If you use GOssTo, please cite it.");
         System.out.println();
-        System.out.println("GOSSTO: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology");
+        System.out.println("GOssTo: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology");
         System.out.println("To appear");
 
         System.out.println();
@@ -487,7 +487,7 @@ public class TerminalInterface {
         System.out.println("Valentini Lab: http://homes.di.unimi.it/~valenti/index.html");
         System.out.println("********************************************************************************************************************");
         System.out.println("--------------------------------------------------------------------------------------------------------------------");
-        System.out.println("GOSSTO  Copyright (C) 2012  Samuel Heron, Alfonso E. Romero");
+        System.out.println("GOssTo  Copyright (C) 2012  Samuel Heron, Alfonso E. Romero");
         System.out.println("This program comes with ABSOLUTELY NO WARRANTY; for details type `--getw' after the Jar execution statement.");
         System.out.println("This is free software, and you are welcome to redistribute it");
         System.out.println("under certain conditions; see the full GNU GPL licence for details.");
