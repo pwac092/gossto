@@ -322,9 +322,9 @@ public class IoValidation {
                 
                 logger.showMessage("\n  ERROR: the specified annotation file has not enough data to produce a semantic similarity matrix for this ontology.\n");
                 logger.showMessage("  This may be due to one of the following facts:\n\n");
-                logger.showMessage("  - There are not many annotations (possibly none) with the specified evidence codes (try adding more, especially IEA).");
+                logger.showMessage("  - There are not enough annotations (possibly none) with the specified evidence codes (try adding more, especially IEA).");
                 logger.showMessage("  - The organism has annotations, but the subset of GO terms you selected contains no annotation (try being less restrictive).");
-                logger.showMessage("  - There are not many genes (possibly none) annotated to valid entries (try selecting a different organism).");
+                logger.showMessage("  - There are not enough genes (possibly none) annotated to valid entries (try selecting a different organism).");
                 logger.showMessage("  - The organism has annotations, but the subset of genes you selected contains no associated GO terms (try being less restrictive).");
                 logger.showMessage("  We cannot do much for solving your problem. We recommend you to select a better organism,");
                 logger.showMessage("  or maybe download GOssTo in its Java version from our webpage ( http://www.paccanarolab.org/gossto/ ),");
@@ -337,11 +337,11 @@ public class IoValidation {
                 out.newLine();
                 out.write("This may be due to one of the following facts:");
                 out.newLine();
-                out.write("- There are not many annotations (possibly none) with the specified evidence codes (try adding more, especially IEA).");
+                out.write("- There are not enough annotations (possibly none) with the specified evidence codes (try adding more, especially IEA).");
                 out.newLine();
                 out.write("- The organism has annotations, but the subset of GO terms you selected contains no annotation (try being less restrictive).");
                 out.newLine();                
-                out.write("- There are not many genes (possibly none) annotated to valid entries (try selecting a different organism).");
+                out.write("- There are not enough genes (possibly none) annotated to valid entries (try selecting a different organism).");
                 out.newLine();
                 out.write("- The organism has annotations, but the subset of genes you selected contains no associated GO terms (try being less restrictive).");
                 out.newLine();
