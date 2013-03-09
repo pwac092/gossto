@@ -53,7 +53,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
         paramOptions.addOption("obopath", true, "Enter filepath for OBO file");
         paramOptions.addOption("goapath", true, "Enter filepath for GOA file");
         paramOptions.addOption("relations", true, "Enter Gene Ontology relations to be used");
-        paramOptions.addOption("evidencecodes", true, "Enter evidence codes to be used when parsing a GOA file");
+        paramOptions.addOption("evidencecodes", true, "Enter evidence codes to be used when parsing a GOA file, \"ALL\" for using all evidence codes");
         paramOptions.addOption("hsm", true, "Enter the name of the HSM to be used");
         paramOptions.addOption("ontology", true, "Enter 'bp' for Biological Process, 'mf' for Molecular Function, 'cc' for Cellular Component and 'all' for all three ontologies.");
         paramOptions.addOption("calculationtype", true, "Enter 'hsm' or 'ism' respective of the calculation you wish to undertake");

@@ -116,6 +116,7 @@ public class IoValidation {
         acceptable.add("NAS");
         acceptable.add("ND");
         acceptable.add("IEA");
+        acceptable.add("ALL");
         for (String code : codes) {
             if (acceptable.contains(code.toUpperCase()) == false) {
                 logger.logAndCloseWriter("#######ERROR: Evidence code: " + code + ", is not acceptable or does not exist.");

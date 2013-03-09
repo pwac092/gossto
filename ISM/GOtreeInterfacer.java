@@ -98,9 +98,8 @@ public class GOtreeInterfacer {
             System.exit(-1);
         }
     }
-    
-    public boolean annotationFileIsEmpty()
-    {
+
+    public boolean annotationFileIsEmpty() {
         return this.annotations.sizeTerms() == 0;
     }
 
@@ -115,7 +114,12 @@ public class GOtreeInterfacer {
     //parses the GOA file specified by 'annoPath' & uses the evidence Codes specified by 'evidenceCodes'
     private void load_Annotation(String annoPath, String[] evidenceCodes) throws FileNotFoundException, IOException {
         AnnotationFile annoFile = new AnnotationFile();
-        this.annotations = annoFile.readAnnotationFile(annoPath, evidenceCodes);
+        if (!Arrays.asList(evidenceCodes).contains("ALL")) {
+            this.annotations = annoFile.readAnnotationFile(annoPath, evidenceCodes);
+        } else {
+            this.logwriter.showMessage("Watch out! We are reading all evidence codes!!!");
+            this.annotations = annoFile.readAnnotationFile(annoPath);            
+        }
     }
 
     //Up propagates the annotations according to the propagation strategy specified by 'strategyChoice' (always PropagationMaxWithinTrees)

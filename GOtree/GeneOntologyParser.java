@@ -174,8 +174,9 @@ public class GeneOntologyParser {
 
         if (!this.alternative_ids.isEmpty())
         {
-            for (String alternative_id : alternative_ids)
+            for (String alternative_id : alternative_ids) {
                 result.putTermById(term, alternative_id);
+            }
         }
 
         if (!this.related.isEmpty()) {

@@ -55,10 +55,7 @@ public class ISM_validImplementation {
     private HashMap<String, Integer> proteinIndices; //to store the protein indices for genewise calculations
     private double maxNumberOfAnnotations; //an integer to store the maximnun number of annotations of any node in the tree
     /*ISM elements*/
-    private OpenMapRealMatrix P; //size: V
-    private OpenMapRealMatrix W;
     private RealMatrix RWC;
-    private RealMatrix ISM;
     private double epsilon;
     /*HSM*/
     private RealMatrix HSM;
@@ -94,8 +91,7 @@ public class ISM_validImplementation {
         this.maxNumberOfAnnotations = this.getMaxOntology();
 
         //0.4 HSM
-        this.HSM = HSM.copy();
-
+        this.HSM = HSM;
 
         //0.5.0 fire up the cache for the indices and load it up
         this.goTermIndex = new HashMap<Integer, Integer>();
@@ -136,7 +132,6 @@ public class ISM_validImplementation {
             }
         }
 
-
         //0.8 RWC
         //Different sets have to be traversed
         if (this.termwise) {
@@ -144,20 +139,7 @@ public class ISM_validImplementation {
         } else {
             this.RWC = new OpenMapRealMatrix(this.proteinIndices.size(), this.proteinIndices.size());
         }
-        this.ISM = null; //new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
 
-
-        //1. initialise transitionprobabilities
-        //we use a sparse matrix, so we don't need to put zeroes anywhere.
-        this.P = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
-        //2. initialise random walkers.
-        //keep in mind that this makes sense because of the way the indexes were
-        //loaded into this.goTermIndex. Otherwise, we would have to retrieve 
-        //from this.goTermIndex
-        this.W = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
-        for (int i = 0; i < this.getNumGoTerms(); i++) {
-            this.W.setEntry(i, i, 1.0);
-        }
         //3.
         //just set the convergence limit.
         this.epsilon = 0.001;
@@ -166,31 +148,40 @@ public class ISM_validImplementation {
     }
 
     public RealMatrix computeISM() throws IOException {
-        //Step 0. Initialise transition probabilities
-        this.logger.showTimedMessage("Initialise transition probabilities");
-        this.initialiseTransitionProbabilities();
+        logger.showMemoryUsage();
 
         //Step 1. Walk!
         this.logger.showTimedMessage("Walking...");
-        this.walk();
+        RealMatrix W = walk();
+
+        logger.showMemoryUsage();
+
         //Step 2. Compute the random wal contribution
         if (this.termwise) {
-            this.setRandomWalkContributionTermwise();
+            this.setRandomWalkContributionTermwise(W);
         } else {
-            this.setRandomWalkContributionGeneWise();
+            this.setRandomWalkContributionGeneWise(W);
         }
+        W = null;
+        System.gc();
+
+        logger.showMemoryUsage();
+
         //Step 3. get the ISM which we return.
-        this.setISM();
-        return this.ISM;
+        logger.showMemoryUsage();
+        return this.getISM();
     }
 
-    private void initialiseTransitionProbabilities() {
+    private RealMatrix initialiseTransitionProbabilities() {
+        //1. initialise transitionprobabilities
+        //we use a sparse matrix, so we don't need to put zeroes anywhere.
+        RealMatrix P = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
 
         //0.1 check if the node is a leaf, if it is, put a 1 into it.
         for (GOTerm currentGoTerm : this.subGoTerms) {
             if (this.leafs.contains(currentGoTerm.getNumericId())) {
                 int leafIndex = this.goTermIndex.get(currentGoTerm.getNumericId());
-                this.P.setEntry(leafIndex, leafIndex, 1.0);
+                P.setEntry(leafIndex, leafIndex, 1.0);
                 continue;
             }
         }
@@ -198,11 +189,12 @@ public class ISM_validImplementation {
             int N_v = this.getNumberOfAnnotations(currentGoTerm);
             int N_vStar = this.getNumberOfAnnotationsStar(currentGoTerm);
 
-            this.setTransitionProbabilitiesNonLeaf(currentGoTerm, N_v, N_vStar);
+            this.setTransitionProbabilitiesNonLeaf(currentGoTerm, N_v, N_vStar, P);
         }
+        return P;
     }
 
-    private void setTransitionProbabilitiesNonLeaf(GOTerm currentGoTerm, int N_v, int N_vStar) {
+    private void setTransitionProbabilitiesNonLeaf(GOTerm currentGoTerm, int N_v, int N_vStar, RealMatrix P) {
         //P(v,c) = (1 - N_v* / N_v) N_c/(Sum{u: v->u} N_u_)
         //P(v,c) = A * N_C/B
 
@@ -272,28 +264,45 @@ public class ISM_validImplementation {
                 double newEntry = A * (N_c * inv_N_u);
                 int v = this.goTermIndex.get(currentGoTerm.getNumericId());
                 int c = this.goTermIndex.get(currentChild.getNumericId());
-                this.P.setEntry(c, v, newEntry);
+                P.setEntry(c, v, newEntry);
             }
         }
     }
 
-    private void walk() throws IOException {
+    private RealMatrix walk() throws IOException {
 
-        OpenMapRealMatrix W_star = new OpenMapRealMatrix(this.W);
+        //Step 0. Initialise transition probabilities
+        this.logger.showTimedMessage("Initialise transition probabilities");
+        RealMatrix P = this.initialiseTransitionProbabilities();
+
+        logger.showMemoryUsage();
+        
+        //2. initialise random walkers.
+        //keep in mind that this makes sense because of the way the indexes were
+        //loaded into this.goTermIndex. Otherwise, we would have to retrieve 
+        //from this.goTermIndex
+        RealMatrix W = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
+        for (int i = 0; i < this.getNumGoTerms(); i++) {
+            W.setEntry(i, i, 1.0);
+        }
+
+        // walk!
+        RealMatrix W_star = W.copy();
         double convergence;
         do {
-            this.W = W_star.copy();
-            W_star = this.P.multiply(this.W);
-            convergence = W_star.subtract(this.W).getFrobeniusNorm();
+            W = W_star;
+            W_star = P.multiply(W);
+            convergence = W_star.subtract(W).getFrobeniusNorm();
             this.logger.showTimedMessage("\t Convergence difference: " + (new Double(convergence)).toString());
         } while (convergence > this.epsilon);
-        this.W = W_star;
+
+        return W_star;
     }
 
-    private void setRandomWalkContributionTermwise() throws IOException {
+    private void setRandomWalkContributionTermwise(RealMatrix W) throws IOException {
 
         this.logger.showTimedMessage("Submatrix (RWC)");
-        this.RWC = this.W.getSubMatrix(this.leafIndices, this.allIndices);
+        this.RWC = W.getSubMatrix(this.leafIndices, this.allIndices);
         this.logger.showTimedMessage("Transpose (RWC)");
 
         this.RWC = this.RWC.transpose();
@@ -305,20 +314,20 @@ public class ISM_validImplementation {
         this.RWC = this.RWC.multiply(subHSM);
         this.logger.showTimedMessage("Submatrix (W)");
 
-        RealMatrix subW = new Array2DRowRealMatrix(this.W.getSubMatrix(this.leafIndices, this.allIndices).getData());
+        RealMatrix subW = new Array2DRowRealMatrix(W.getSubMatrix(this.leafIndices, this.allIndices).getData());
         this.logger.showTimedMessage("RWC * SubMatrixW");
 
         this.RWC = this.RWC.multiply(subW);
         this.logger.showTimedMessage("RWC set!");
     }
 
-    private void setRandomWalkContributionGeneWise() throws IOException {
+    private void setRandomWalkContributionGeneWise(RealMatrix W) throws IOException {
         //0. get matrix A
         this.logger.showTimedMessage("Getting matrix A");
         RealMatrix A = this.getMatrixA();
         //1. multiply both matrices.
         this.logger.showTimedMessage("Getting matrix B");
-        RealMatrix B = this.W.getSubMatrix(this.leafIndices, this.allIndices).multiply(A);
+        RealMatrix B = W.getSubMatrix(this.leafIndices, this.allIndices).multiply(A);
         //2. calculate the RWC
         //2.0 traverse all the products.
         //set the value for all eht rows for this column and this row
@@ -389,7 +398,7 @@ public class ISM_validImplementation {
         //0. gather data
         double combinedSum = 0.0;
         double sumProductOne = 0.0, sumProductTwo = 0.0;
-        
+
         for (int i = 0; i < this.leafIndices.length; i++) {
             //compute data independently
             combinedSum += distributionProductOne[i] * distributionProductTwo[i];
@@ -420,8 +429,8 @@ public class ISM_validImplementation {
         return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
     }
 
-    private void setISM() {
-        this.ISM = (this.RWC.add(HSM)).scalarMultiply(0.5);
+    private RealMatrix getISM() {
+        return (this.HSM.add(RWC)).scalarMultiply(0.5);
     }
 
     //**************************************************************************

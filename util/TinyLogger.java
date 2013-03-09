@@ -28,7 +28,7 @@ public class TinyLogger {
 
     private BufferedWriter logwriter; //Used for writing messages to the log file
     private static boolean logging = false;
-    
+
     public TinyLogger() {
     }
 
@@ -59,10 +59,21 @@ public class TinyLogger {
         }
     }
 
+    public void showMemoryUsage() throws IOException {
+        double mem = Runtime.getRuntime().totalMemory() / (1024.0 * 1024.0);
+
+        if (mem < 1024.0) {
+            this.showTimedMessage("Memory usage: " + mem + " MB");
+        } else {
+            mem /= 1024.0;
+            this.showTimedMessage("Memory usage: " + mem + " GB");
+        }
+    }
+
     private String getTimestamp() {
         return (new Timestamp((new java.util.Date()).getTime())).toString();
     }
-    
+
     public void showTimedMessage(String message) throws IOException {
         String timestamp = this.getTimestamp();
         System.out.println("[" + timestamp + "] " + message);

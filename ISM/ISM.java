@@ -328,8 +328,8 @@ public class ISM {
                 }
             }
 
-
             logger.log("HSM calculated");
+            logger.showMemoryUsage();
 
             // (b) we print the results of the HSM to a file...            
             logger.showMessage("##### Printing HSM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
@@ -353,6 +353,7 @@ public class ISM {
 
                 // and we print the results of the HSM to a file...            
                 logger.showMessage("##### Printing ISM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
+                logger.showMemoryUsage();
                 validator.printResultsToFile(ontology, ismResults, matrixAxis, this.ismFileName, this.notes, goIDsAsGOTerm, genesRows);
             }
 

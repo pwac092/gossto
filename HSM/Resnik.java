@@ -49,9 +49,8 @@ public class Resnik extends HSM {
                 result.setEntry(j, i, res);
             }
         }
-        
-        logwriter.log("Completed HSM for " + shortOntologyName[ontology]);
-        System.out.println("Completed Resnik for Ontology " + longOntologyName[ontology]);
+
+        logwriter.showTimedMessage("Completed Resnik for Ontology " + longOntologyName[ontology]);
 
         return result;
     }

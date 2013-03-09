@@ -130,6 +130,12 @@ public class AnnotationFile {
         this.strategy.setProteinIdentifiers(proteinIds);
         return this.readFromFile(fileName, setOfEvidenceCodes);
     }
+    
+    // reads annotation file with all evidence codes
+    public Assignment readAnnotationFile(String fileName) throws IOException, FileNotFoundException {
+        this.strategy = new AnnotationFileWithoutExternalProteinIds();
+        return this.readFromFile(fileName, allCodes);
+    }
 
     //I edited this so that the evidence codes are supplied directly rather than an integer choice relayed to the getSetOfEvidenceCodes method
     public Assignment readAnnotationFile(String fileName, String[] evidenceCodes) throws IOException, FileNotFoundException {

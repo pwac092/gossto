@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
@@ -223,7 +221,7 @@ public abstract class HSM {
         double maxi = Double.NEGATIVE_INFINITY;
         final int rows = mat.getRowDimension();
         final int cols = mat.getColumnDimension();
-        
+
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
                 double v = mat.getEntry(i, j);
@@ -234,35 +232,62 @@ public abstract class HSM {
     }
 
     protected RealMatrix geneWiseSimilarityByMaximum(int ontology) throws IOException, OutOfMemoryError {
+        //compute the semantic similarity
+        RealMatrix termWise = this.calculateTermWiseSemanticSimilarity(ontology);
+
+        Map<Integer, Set<Integer>> dominates = this.computeDominancies(termWise);
+
         Map<String, int[]> goIdsPerGene = new HashMap<String, int[]>();
-        
+
         this.logwriter.showMessage("Extracting GO term ids associated to each gene... ");
+        int all = 0, removed = 0;
+        
         for (String gene : this.annotations.getRowIdentifiers()) {
 
             Set<Integer> ids = new HashSet<Integer>();
+            Set<Integer> blacklisted = new HashSet<Integer>();
 
             for (String goTerm : this.annotations.getGOTermScoresForProteinId(gene).keySet()) {
 
                 if (this.ontologyFromGOTerm.containsKey(goTerm) && this.ontologyFromGOTerm.get(goTerm) == ontology) {
                     //goterm index in HSM matrix.
                     int id = this.indexFromGOTerm.get(goTerm);
+
+                    for (int id_in : ids) {
+                        if (dominates.get(id).contains(id_in)) {
+                            blacklisted.add(id_in);
+                        } else if (dominates.get(id_in).contains(id)) {
+                            blacklisted.add(id);
+                            break;
+                        }
+                    }
+
                     ids.add(id);
                 }
             }
+            
+            all+= ids.size();
+            removed += blacklisted.size();
 
             if (!ids.isEmpty()) {
 
-                int arrayIds[] = new int[ids.size()];
+                int arrayIds[] = new int[ids.size() - blacklisted.size()];
                 int i = 0;
                 for (int val : ids) {
-                    arrayIds[i] = val;
-                    i++;
+                    if (!blacklisted.contains(val)) {
+                        arrayIds[i] = val;
+                        i++;
+                    }
                 }
 
                 Arrays.sort(arrayIds);
                 goIdsPerGene.put(gene, arrayIds);
             }
         }
+        
+        double perc = (double)removed / (double) all * 100.0;
+        
+        this.logwriter.showMessage("Removed " + perc + "% of all associations because of dominancy");
 
         //filter out all the genes annotated to the desired ontology
         ArrayList<String> selectedGenes = new ArrayList<String>(goIdsPerGene.keySet());
@@ -274,21 +299,18 @@ public abstract class HSM {
         this.computedGenes = new String[NUM_GENES_ONTOLOGY];
         selectedGenes.toArray(this.computedGenes);
 
-        //compute the semantic similarity
-        RealMatrix termWise = this.calculateTermWiseSemanticSimilarity(ontology);
-     
         RealMatrix result = new Array2DRowRealMatrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
 
         //which pair of terms annoating the genes is the most similar
-        
+
         for (int i = 0; i < NUM_GENES_ONTOLOGY; ++i) {
             //get genes annotating the first gene
             final int[] goTerms_i = goIdsPerGene.get(selectedGenes.get(i));
-            
+
             for (int j = i; j < NUM_GENES_ONTOLOGY; ++j) {
                 //get genes annotating the second gene
                 final int[] goTerms_j = goIdsPerGene.get(selectedGenes.get(j));
-                                
+
                 double max = this.matrixMax(termWise.getSubMatrix(goTerms_i, goTerms_j));
 
                 // set matrix values
@@ -301,5 +323,53 @@ public abstract class HSM {
         System.out.println("Completed HSM for Ontology: " + longOntologyName[ontology]);
 
         return result;
+    }
+
+    private Map<Integer, Set<Integer>> computeDominancies(RealMatrix x) {
+        System.err.println("Computing dominancies");
+        final int m = x.getRowDimension();
+        final int n = x.getRowDimension();
+
+        Map<Integer, Set<Integer>> dominates = new HashMap<Integer, Set<Integer>>();
+
+        for (int i = 0; i < m; ++i) {
+            if (!dominates.containsKey(i)) {
+                dominates.put(i, new HashSet<Integer>());
+            }
+
+            for (int j = i + 1; j < m; ++j) {
+                if (!dominates.containsKey(j)) {
+                    dominates.put(j, new HashSet<Integer>());
+                }
+
+                boolean greater = true, lesser = true;
+
+                for (int k = 0; k < n; ++k) {
+                    greater = greater && x.getEntry(i, k) >= x.getEntry(j, k);
+                    lesser = lesser && x.getEntry(i, k) < x.getEntry(j, k);
+
+                    if (!greater && !lesser) {
+                        break;
+                    }
+                }
+
+                if (greater) {
+                    dominates.get(i).add(j);
+                }
+                if (lesser) {
+                    dominates.get(j).add(i);
+                }
+            }
+        }
+
+        /*
+        int k = 0;
+        for (int i = 0; i < m; ++i) {
+            if (dominates.get(i).size() > 10) {
+                ++k;
+                System.err.println("Row " + i + " dominates " + dominates.get(i).size());
+            }
+        } */
+        return dominates;
     }
 }
