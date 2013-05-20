@@ -15,11 +15,11 @@
 package ISM;
 
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -178,7 +178,7 @@ public class IoValidation {
         return myOntologies;
     }
     
-    public void printResultsToFile(int ontology, RealMatrix matrix, GOTerm[][] axis, String outputName, ArrayList<String> notes, ArrayList<GOTerm> targetGoIDs, String[] geneIDs) throws IOException {
+    public void printResultsToFile(int ontology, Matrix matrix, GOTerm[][] axis, String outputName, ArrayList<String> notes, ArrayList<GOTerm> targetGoIDs, String[] geneIDs) throws IOException {
         //re-validate file path:
         validateOutputLocation(outputName);
         //Creates output file(s) where specified
@@ -307,7 +307,7 @@ public class IoValidation {
                         //double checkVal = matrix.getEntry(i, j);
                         //String outputFormat = this.myFormat(checkVal);
 
-                        out.write("" + (float) matrix.getEntry(i, j));
+                        out.write("" + matrix.get(i, j));
                         if (j != m - 1) {
                             out.write("\t");
                         }

@@ -16,10 +16,9 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
 import java.util.HashSet;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -36,10 +35,10 @@ public class simUI extends HSM {
     }
 
     @Override
-    public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         System.out.println("#####SimUI HSM#####");
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new Array2DRowRealMatrix(N, N);
+        Matrix result = new Matrix(N, N);
         final int NUM_GENES = this.genes.length;
 
         HashSet<GOTerm> GeneGroups[] = new HashSet[NUM_GENES];
@@ -65,7 +64,7 @@ public class simUI extends HSM {
             if (GeneGroups[i].isEmpty() == false) {
                 for (int j = 0; j < GeneGroups.length; j++) {
                     if (GeneGroups[j].isEmpty() == false) {
-                        double intersectionVal = 0;
+                        int intersectionVal = 0;
                         union.clear();
                         for (GOTerm go : GeneGroups[i]) //get values that are unique to one or other set
                         {
@@ -80,9 +79,9 @@ public class simUI extends HSM {
                         }
                         union.addAll(GeneGroups[i]); //get union of the two sets
                         union.addAll(GeneGroups[j]);
-                        double unionVal = union.size();
-                        double semSim = intersectionVal / unionVal; //calculate similarity value
-                        result.setEntry(i, j, semSim);
+                        float unionVal = union.size();
+                        float semSim = (float) intersectionVal / unionVal; //calculate similarity value
+                        result.set(i, j, semSim);
                     }
                 }
             }
@@ -92,7 +91,7 @@ public class simUI extends HSM {
     }
 
     @Override
-    public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

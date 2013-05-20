@@ -20,15 +20,13 @@ package ISM;
  */
 import GOtree.GOTerm;
 import HSM.HSM;
+import Jama.Matrix;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -109,7 +107,7 @@ public class HSMInterfacer {
         this.chosenHSM = hsmInstance;
     }
 
-    public RealMatrix returnGeneWiseResults(int matrix) throws IOException {
+    public Matrix returnGeneWiseResults(int matrix) throws IOException {
         if (chosenHSM.getNumGOTermsPerOntology(matrix) == 0) {
             // this case might happen if the organism has no annotation in that ontology
             return null;
@@ -123,7 +121,7 @@ public class HSMInterfacer {
     }
 
     //Retrieves the HSM results, the parameter specifying whether we want to force it to return the gene simiarity results (only required fro printing)
-    public RealMatrix returnTermWiseResults(int matrix) throws IOException {
+    public Matrix returnTermWiseResults(int matrix) throws IOException {
         if (chosenHSM.getNumGOTermsPerOntology(matrix) == 0) {
             // this case might happen if the organism has no annotation in that ontology
             return null;
@@ -136,8 +134,8 @@ public class HSMInterfacer {
         }
     }
 
-    private RealMatrix returnTrimmedMatrixForGenes(RealMatrix in) {
-        RealMatrix trimmedMatrix;
+    private Matrix returnTrimmedMatrixForGenes(Matrix in) {
+        Matrix trimmedMatrix;
         trimmedMatrix = null;
 
         int size = 0, rowInd = 0, colInd = 0;
@@ -153,13 +151,13 @@ public class HSMInterfacer {
         }
 
         if (size > 0) {
-            trimmedMatrix = new Array2DRowRealMatrix(size, size);
+            trimmedMatrix = new Matrix(size, size);
             for (int i = 0; i < in.getRowDimension(); i++) {
 
                 if (selGenez.contains(allGenes[i])) {
                     for (int j = 0; j < in.getRowDimension(); j++) {
                         if (selGenez.contains(allGenes[j])) {
-                            trimmedMatrix.setEntry(rowInd, colInd, in.getEntry(i, j));
+                            trimmedMatrix.set(rowInd, colInd, in.get(i, j));
                             colInd++;
                         }
                     }
@@ -172,9 +170,9 @@ public class HSMInterfacer {
         return trimmedMatrix;
     }
 
-    private RealMatrix returnTrimmedMatrix(RealMatrix in, int matrix) {
+    private Matrix returnTrimmedMatrix(Matrix in, int matrix) {
         int size = 0, rowInd = 0, colInd = 0;
-        RealMatrix trimmedMatrix;
+        Matrix trimmedMatrix;
         trimmedMatrix = null;
 
         for (int i = 0; i < in.getRowDimension(); i++) {
@@ -183,12 +181,12 @@ public class HSMInterfacer {
             }
         }
         if (size > 0) {
-            trimmedMatrix = new Array2DRowRealMatrix(size, size);
+            trimmedMatrix = new Matrix(size, size);
             for (int i = 0; i < in.getRowDimension(); i++) {
                 if (targets.contains(matrixAxis[matrix][i])) {
                     for (int j = 0; j < in.getRowDimension(); j++) {
                         if (targets.contains(matrixAxis[matrix][j])) {
-                            trimmedMatrix.setEntry(rowInd, colInd, in.getEntry(i, j));
+                            trimmedMatrix.set(rowInd, colInd, in.get(i, j));
                             colInd++;
                         }
                     }

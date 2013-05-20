@@ -1,27 +1,27 @@
 /*This file is part of GOssTo.
- GOssTo is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
- GOssTo is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
 import GOtree.GOTerm;
+import GOtree.GeneOntologyException;
+import Jama.Matrix;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -163,7 +163,7 @@ public class ISM {
      *
      * @return a GOtree_interfacer object with all the GO tree data
      */
-    private GOtreeInterfacer importGOTree() throws FileNotFoundException, IOException {
+    private GOtreeInterfacer importGOTree() throws FileNotFoundException, IOException, GeneOntologyException {
 
         logger.showMessage("#####Importing GO & Annotation Data#####");
         int propagationStrategy = 1; //Choice of propagation strategy, 1 as default, never changed.
@@ -235,11 +235,11 @@ public class ISM {
 
 
             /*
-             if (this.goIDs.length != goIDsAsGOTerm.size()) {
-             logger.logAndCloseWriter("############ ERROR: Invalid GOTerms found");
-             System.err.println("ERROR: One or more goterm IDs entered do not exist");
-             System.exit(-1);
-             }*/
+            if (this.goIDs.length != goIDsAsGOTerm.size()) {
+            logger.logAndCloseWriter("############ ERROR: Invalid GOTerms found");
+            System.err.println("ERROR: One or more goterm IDs entered do not exist");
+            System.exit(-1);
+            }*/
         }
 
         logger.log("Terms validated");
@@ -261,12 +261,12 @@ public class ISM {
 
 
             /* String argz[] = {"-obopath", "current.obo", "-goapath",
-             "gene_association.goa_human", "-relations", "is_a,part_of",
-             "-evidencecodes", selectedEVCodes,
-             "-hsm", "Resnik", "-ontology", "all",
-             "-calculationtype", "ism", "-calculationdata", "genewise",
-             "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
-             "all", "-weightedJaccard", "false"};*/
+            "gene_association.goa_human", "-relations", "is_a,part_of",
+            "-evidencecodes", selectedEVCodes,
+            "-hsm", "Resnik", "-ontology", "all",
+            "-calculationtype", "ism", "-calculationdata", "genewise",
+            "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
+            "all", "-weightedJaccard", "false"};*/
 
             // 1.- the parameters are validated
             ism.validateParameters(args);
@@ -282,8 +282,19 @@ public class ISM {
             // 4.- Say goodbye!
             ism.farewell();
 
+        } catch (OutOfMemoryError ex) {
+            System.err.println("ERROR: Insufficient memory to run GOSSTO with the chosen parameter set.");
+            System.err.println("Please, launch the Java Virtual Machine with at least 2 GB of memory,");
+            System.err.println("by setting 'java -Xmx2G ... '. Check your systems documentation for");
+            System.err.println("specific options."); 
+            System.exit(-1);
+        } catch (GeneOntologyException ex) {
+            System.err.println("ERROR: problem with the Gene Ontology file.");
+            System.err.println(ex.getMy_message());
+            System.exit(-1);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
+            System.exit(-1);
         }
     }
 
@@ -294,15 +305,15 @@ public class ISM {
         // tells us which GO term are its "parents" following the required
         // relationships (is_a, part_of, ...) that were said to be parsed in the
         // program options
-        OpenMapRealMatrix[] adjacencies = new OpenMapRealMatrix[3];
-        adjacencies[0] = gti.getBPAdjacencyMatrix(); //fetch adjacency matrices
-        adjacencies[1] = gti.getMFAdjacencyMatrix();
-        adjacencies[2] = gti.getCCAdjacencyMatrix();
+        //Adjacency[] adjacencies = new Adjacency[3];
+        //adjacencies[0] = gti.getBPAdjacencyMatrix(); //fetch adjacency matrices
+        //adjacencies[1] = gti.getMFAdjacencyMatrix();
+        //adjacencies[2] = gti.getCCAdjacencyMatrix();
 
         // 2.- HSM computation       
 
         // 2.1.- Builds an HSM interfacer (to abstract the different HSMs)
-        Object[] params = generateParameters(gti, matrixAxis, adjacencies, goIDsAsGOTerm, validator);
+        Object[] params = generateParameters(gti, matrixAxis, goIDsAsGOTerm, validator);
         HSMInterfacer hsmi = buildsHSMInterfacer(params, new HashSet<GOTerm>(goIDsAsGOTerm), matrixAxis);
         hsmi.retrieveHSMinstance(this.hsmChoice, params);
 
@@ -312,7 +323,7 @@ public class ISM {
             // for each ontology...
             // (a) compute HSM
             logger.showMessage("##### Computing HSM (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
-            RealMatrix hsmResults;
+            Matrix hsmResults;
 
             String genesRows[] = null;
 
@@ -342,13 +353,13 @@ public class ISM {
                 ISMInterfacer ism = new ISMInterfacer();
 
                 logger.showMessage("##### Computing ISM (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
-                RealMatrix ismResults;
+                Matrix ismResults;
                 if (this.termWise) {
                     // compute ISM term-wise
-                    ismResults = ism.getISMs(adjacencies, matrixAxis, hsmResults, gti.getResults(), goIDsAsGOTerm, chosenRelations, dagChoice, ontology, logger);
+                    ismResults = ism.getISMs(matrixAxis, hsmResults, gti.getResults(), goIDsAsGOTerm, chosenRelations, dagChoice, ontology, logger);
                 } else {
                     // compute ISM gene-wise
-                    ismResults = ism.getGeneISMs(adjacencies, matrixAxis, hsmResults, gti.getResults(), goIDsAsGOTerm, chosenRelations, dagChoice, ontology, logger, this.weightedJaccard);
+                    ismResults = ism.getGeneISMs(matrixAxis, hsmResults, gti.getResults(), goIDsAsGOTerm, chosenRelations, dagChoice, ontology, logger, this.weightedJaccard);
                 }
 
                 // and we print the results of the HSM to a file...            
@@ -369,7 +380,7 @@ public class ISM {
     private HSMInterfacer buildsHSMInterfacer(Object[] params, Set<GOTerm> targets, GOTerm[][] matrixAxis)
             throws IOException {
         //initialise the HSM interfacer
-        
+
         HSMInterfacer hsmi = new HSMInterfacer(logger, targets, matrixAxis, this.geneIDs);
         logger.log("HSM_Interfacer instantiated");
 
@@ -377,7 +388,7 @@ public class ISM {
         return hsmi;
     }
 
-    private Object[] generateParameters(GOtreeInterfacer gti, GOTerm[][] matrixAxis, OpenMapRealMatrix[] adjacencies, ArrayList<GOTerm> goIDsAsGOTerm, IoValidation validate) {
+    private Object[] generateParameters(GOtreeInterfacer gti, GOTerm[][] matrixAxis, ArrayList<GOTerm> goIDsAsGOTerm, IoValidation validate) {
         //Create array of all GO terms
         GOTerm[] allterms = new GOTerm[matrixAxis[0].length + matrixAxis[1].length + matrixAxis[2].length];
         int counter = 0;

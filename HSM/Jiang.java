@@ -16,9 +16,8 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -33,49 +32,49 @@ public class Jiang extends HSM {
     }
 
     @Override
-    public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         return super.geneWiseSimilarityByMaximum(ontology);
     }
 
     @Override
-    public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         assert (ontology >= 0 && ontology < 3);
 
-        double M = Double.NEGATIVE_INFINITY; //getting M
+        float M = Float.NEGATIVE_INFINITY; //getting M
 
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new Array2DRowRealMatrix(N, N);
+        Matrix result = new Matrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
-                double dJiang = -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
-                result.setEntry(i, j, dJiang);
-                result.setEntry(j, i, dJiang);
+                float dJiang = (float) -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
+                result.set(i, j, dJiang);
+                result.set(j, i, dJiang);
                 M = Math.max(M, dJiang);
             }
         }
         //Jiang normalisation:
-        double[] normalizedDiagonal = new double[N];
-        final double invM = 1.0 / M;
+        float[] normalizedDiagonal = new float[N];
+        final float invM = 1.0f / M;
         for (int i = 0; i < N; i++) {
-            normalizedDiagonal[i] = result.getEntry(i, i) * invM;
+            normalizedDiagonal[i] = result.get(i, i) * invM;
         }
 
-        double maxJiang = Double.NEGATIVE_INFINITY;
+        float maxJiang = Float.NEGATIVE_INFINITY;
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
                 //set and calculate the Jiang value
-                double value = (-2.0 * (result.getEntry(i, j) * invM) + normalizedDiagonal[i] + normalizedDiagonal[j]);
-                result.setEntry(i, j, value);
-                result.setEntry(j, i, value);
+                float value = (-2.0f * (result.get(i, j) * invM) + normalizedDiagonal[i] + normalizedDiagonal[j]);
+                result.set(i, j, value);
+                result.set(j, i, value);
                 maxJiang = Math.max(maxJiang, value);
             }
         }
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
-                result.setEntry(i, j, 1.0 - (result.getEntry(i, j) / maxJiang)); //Jiang finishing normalisation
-                result.setEntry(j, i, result.getEntry(i, j));
+                result.set(i, j, 1.0f - (result.get(i, j) / maxJiang)); //Jiang finishing normalisation
+                result.set(j, i, result.get(i, j));
             }
         }
 

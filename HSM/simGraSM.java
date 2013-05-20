@@ -16,13 +16,12 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -44,7 +43,7 @@ public class simGraSM extends HSM {
     }
 
     //Finds the disjunctive common ancestors for the two terms 'target1' & 'target2' in the ontology specified by 'dag'
-    private double disjunctiveCommonAncestors(GOTerm target1, GOTerm target2, int dag) {
+    private float disjunctiveCommonAncestors(GOTerm target1, GOTerm target2, int dag) {
         HashSet<GOTerm> DCA = new HashSet<GOTerm>(); //Disjunctive common ancestors
         HashSet<GOTerm> CA = commonAncestors(target1, target2); //Common ancestors
         HashSet<GOTerm> DAunion = new HashSet<GOTerm>(disjunctiveAncestors(target1)); //Union of disjunctive ancestors
@@ -71,10 +70,10 @@ public class simGraSM extends HSM {
 //get similarity value
         if (DCA.isEmpty()) //e.g root & root, no DA's, only CA = root etc.
         {
-            return 0;
+            return 0.0f;
         } else {
             int counter = 0; //counts number of disjunctive common ancestors
-            double semSimVal = 0.0;
+            float semSimVal = 0.0f;
             for (GOTerm dca : DCA) {
                 semSimVal += -Math.log(annotations.countNumberOfGenesForGOTerm(dca.getGOid()) / this.maxAnnotationNumber[dag]); //Entropy value
                 counter++;
@@ -154,21 +153,21 @@ public class simGraSM extends HSM {
     }
 
     @Override
-    public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         return super.geneWiseSimilarityByMaximum(ontology);
     }
 
     @Override
-    public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         assert (ontology >= 0 && ontology < 3);
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new Array2DRowRealMatrix(N, N);
+        Matrix result = new Matrix(N, N);
 
         for (int i = 0; i < N - 1; i++) {
             for (int j = i; j < N; j++) { //Semantic similarity calculated based upon disjunctive common ancestors
-                double val = disjunctiveCommonAncestors(this.matrixAxis[ontology][i], this.matrixAxis[ontology][j], ontology);
-                result.setEntry(i, j, val);
-                result.setEntry(j, i, val);
+                float val = disjunctiveCommonAncestors(this.matrixAxis[ontology][i], this.matrixAxis[ontology][j], ontology);
+                result.set(i, j, val);
+                result.set(j, i, val);
             }
         }
         logwriter.showMessage("Completed HSM for " + shortOntologyName[ontology]);

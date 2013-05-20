@@ -16,6 +16,7 @@ package ISM_ImplementationStrategies;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -55,10 +53,10 @@ public class ISM_validImplementation {
     private HashMap<String, Integer> proteinIndices; //to store the protein indices for genewise calculations
     private double maxNumberOfAnnotations; //an integer to store the maximnun number of annotations of any node in the tree
     /*ISM elements*/
-    private RealMatrix RWC;
+    private Matrix RWC;
     private double epsilon;
     /*HSM*/
-    private RealMatrix HSM;
+    private Matrix HSM;
     /*Annotations*/
     private Assignment annotations; //the actual annotations. 
     private HashMap<Integer, Integer> numAnnotations; //just a cache for regular annotations
@@ -73,7 +71,7 @@ public class ISM_validImplementation {
      */
     private TinyLogger logger;
 
-    public ISM_validImplementation(GOTerm[] ISM_currentGoTerms, RealMatrix HSM, String[] ISM_currentRelations, Assignment ISM_Annotations, boolean termwise, boolean wJaccard, TinyLogger logger) {
+    public ISM_validImplementation(GOTerm[] ISM_currentGoTerms, Matrix HSM, String[] ISM_currentRelations, Assignment ISM_Annotations, boolean termwise, boolean wJaccard, TinyLogger logger) {
 
 
         //0. Utils
@@ -135,9 +133,9 @@ public class ISM_validImplementation {
         //0.8 RWC
         //Different sets have to be traversed
         if (this.termwise) {
-            this.RWC = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
+            this.RWC = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
         } else {
-            this.RWC = new OpenMapRealMatrix(this.proteinIndices.size(), this.proteinIndices.size());
+            this.RWC = new Matrix(this.proteinIndices.size(), this.proteinIndices.size());
         }
 
         //3.
@@ -147,12 +145,12 @@ public class ISM_validImplementation {
         this.logger = logger;
     }
 
-    public RealMatrix computeISM() throws IOException {
+    public Matrix computeISM() throws IOException {
         logger.showMemoryUsage();
 
         //Step 1. Walk!
         this.logger.showTimedMessage("Walking...");
-        RealMatrix W = walk();
+        Matrix W = walk();
 
         logger.showMemoryUsage();
 
@@ -172,16 +170,16 @@ public class ISM_validImplementation {
         return this.getISM();
     }
 
-    private RealMatrix initialiseTransitionProbabilities() {
+    private Matrix initialiseTransitionProbabilities() {
         //1. initialise transitionprobabilities
         //we use a sparse matrix, so we don't need to put zeroes anywhere.
-        RealMatrix P = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
+        Matrix P = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
 
         //0.1 check if the node is a leaf, if it is, put a 1 into it.
         for (GOTerm currentGoTerm : this.subGoTerms) {
             if (this.leafs.contains(currentGoTerm.getNumericId())) {
                 int leafIndex = this.goTermIndex.get(currentGoTerm.getNumericId());
-                P.setEntry(leafIndex, leafIndex, 1.0);
+                P.set(leafIndex, leafIndex, 1.0f);
                 continue;
             }
         }
@@ -194,7 +192,7 @@ public class ISM_validImplementation {
         return P;
     }
 
-    private void setTransitionProbabilitiesNonLeaf(GOTerm currentGoTerm, int N_v, int N_vStar, RealMatrix P) {
+    private void setTransitionProbabilitiesNonLeaf(GOTerm currentGoTerm, int N_v, int N_vStar, Matrix P) {
         //P(v,c) = (1 - N_v* / N_v) N_c/(Sum{u: v->u} N_u_)
         //P(v,c) = A * N_C/B
 
@@ -206,7 +204,7 @@ public class ISM_validImplementation {
             return;
         }
 
-        double A = (1.0 - ((double) N_vStar / (double) N_v));
+        float A = (1.0f - ((float) N_vStar / (float) N_v));
 
         //we get all the children
         //now, this is a tricky one.
@@ -241,7 +239,7 @@ public class ISM_validImplementation {
 
         //P(v,c) = A * N_C/B
 
-        final double inv_N_u = 1.0 / N_u;
+        final float inv_N_u = 1.0f / N_u;
 
         Map<Integer, GOTerm> sortedChildren = new TreeMap<Integer, GOTerm>();
 
@@ -261,19 +259,19 @@ public class ISM_validImplementation {
 
 
             if (N_c > 0) {
-                double newEntry = A * (N_c * inv_N_u);
+                float newEntry = A * (N_c * inv_N_u);
                 int v = this.goTermIndex.get(currentGoTerm.getNumericId());
                 int c = this.goTermIndex.get(currentChild.getNumericId());
-                P.setEntry(c, v, newEntry);
+                P.set(c, v, newEntry);
             }
         }
     }
 
-    private RealMatrix walk() throws IOException {
+    private Matrix walk() throws IOException {
 
         //Step 0. Initialise transition probabilities
         this.logger.showTimedMessage("Initialise transition probabilities");
-        RealMatrix P = this.initialiseTransitionProbabilities();
+        Matrix P = this.initialiseTransitionProbabilities();
 
         logger.showMemoryUsage();
         
@@ -281,53 +279,53 @@ public class ISM_validImplementation {
         //keep in mind that this makes sense because of the way the indexes were
         //loaded into this.goTermIndex. Otherwise, we would have to retrieve 
         //from this.goTermIndex
-        RealMatrix W = new OpenMapRealMatrix(this.getNumGoTerms(), this.getNumGoTerms());
+        Matrix W = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
         for (int i = 0; i < this.getNumGoTerms(); i++) {
-            W.setEntry(i, i, 1.0);
+            W.set(i, i, 1.0f);
         }
 
         // walk!
-        RealMatrix W_star = W.copy();
+        Matrix W_star = W.copy();
         double convergence;
         do {
             W = W_star;
-            W_star = P.multiply(W);
-            convergence = W_star.subtract(W).getFrobeniusNorm();
+            W_star = P.times(W);
+            convergence = W_star.minus(W).normF();
             this.logger.showTimedMessage("\t Convergence difference: " + (new Double(convergence)).toString());
         } while (convergence > this.epsilon);
 
         return W_star;
     }
 
-    private void setRandomWalkContributionTermwise(RealMatrix W) throws IOException {
+    private void setRandomWalkContributionTermwise(Matrix W) throws IOException {
 
         this.logger.showTimedMessage("Submatrix (RWC)");
-        this.RWC = W.getSubMatrix(this.leafIndices, this.allIndices);
+        this.RWC = W.getMatrix(this.leafIndices, this.allIndices);
         this.logger.showTimedMessage("Transpose (RWC)");
 
         this.RWC = this.RWC.transpose();
         this.logger.showTimedMessage("Submatrix (HSM)");
 
-        RealMatrix subHSM = this.HSM.getSubMatrix(this.leafIndices, this.leafIndices);
+        Matrix subHSM = this.HSM.getMatrix(this.leafIndices, this.leafIndices);
         this.logger.showTimedMessage("RWC * HSM");
 
-        this.RWC = this.RWC.multiply(subHSM);
+        this.RWC = this.RWC.times(subHSM);
         this.logger.showTimedMessage("Submatrix (W)");
 
-        RealMatrix subW = new Array2DRowRealMatrix(W.getSubMatrix(this.leafIndices, this.allIndices).getData());
+        Matrix subW = W.getMatrix(this.leafIndices, this.allIndices).copy();
         this.logger.showTimedMessage("RWC * SubMatrixW");
 
-        this.RWC = this.RWC.multiply(subW);
+        this.RWC = this.RWC.times(subW);
         this.logger.showTimedMessage("RWC set!");
     }
 
-    private void setRandomWalkContributionGeneWise(RealMatrix W) throws IOException {
+    private void setRandomWalkContributionGeneWise(Matrix W) throws IOException {
         //0. get matrix A
         this.logger.showTimedMessage("Getting matrix A");
-        RealMatrix A = this.getMatrixA();
+        Matrix A = this.getMatrixA();
         //1. multiply both matrices.
         this.logger.showTimedMessage("Getting matrix B");
-        RealMatrix B = W.getSubMatrix(this.leafIndices, this.allIndices).multiply(A);
+        Matrix B = W.getMatrix(this.leafIndices, this.allIndices).times(A);
         //2. calculate the RWC
         //2.0 traverse all the products.
         //set the value for all eht rows for this column and this row
@@ -337,29 +335,29 @@ public class ISM_validImplementation {
 
         if (this.weightedJaccard) {
             for (int i = 0; i < N; i++) {
-                double column_i[] = B.getColumn(i);
+                float column_i[] = B.getColumn(i);
                 for (int j = i; j < M; j++) {
-                    double jaccardIndex = this.getJaccardIndexWithIC(column_i, B.getColumn(j));
-                    this.RWC.setEntry(i, j, jaccardIndex);
-                    this.RWC.setEntry(j, i, jaccardIndex);
+                    float jaccardIndex = this.getJaccardIndexWithIC(column_i, B.getColumn(j));
+                    this.RWC.set(i, j, jaccardIndex);
+                    this.RWC.set(j, i, jaccardIndex);
                 }
             }
         } else {
             for (int i = 0; i < N; i++) {
-                double column_i[] = B.getColumn(i);
+                float column_i[] = B.getColumn(i);
                 for (int j = i; j < M; j++) {
-                    double jaccardIndex = this.getJaccardIndexWithoutIC(column_i, B.getColumn(j));
-                    this.RWC.setEntry(i, j, jaccardIndex);
-                    this.RWC.setEntry(j, i, jaccardIndex);
+                    float jaccardIndex = this.getJaccardIndexWithoutIC(column_i, B.getColumn(j));
+                    this.RWC.set(i, j, jaccardIndex);
+                    this.RWC.set(j, i, jaccardIndex);
                 }
             }
         }
         this.logger.showTimedMessage("RWC set!");
     }
 
-    private RealMatrix getMatrixA() {
+    private Matrix getMatrixA() {
 
-        RealMatrix A = new OpenMapRealMatrix(this.getNumGoTerms(), this.annotations.sizeGenes());
+        Matrix A = new Matrix(this.getNumGoTerms(), this.annotations.sizeGenes());
         for (GOTerm currentGoTerm : this.subGoTerms) {
             //0. check for NStar value > 0, since this indicates there
             //is an annotation 
@@ -387,17 +385,17 @@ public class ISM_validImplementation {
                     //but it should not be a very complicated problem to solve.
                     int count = this.annotations.getGOTermScoresForProteinId(uniqueAnnotation).keySet().size();
                     //0. get the protein id.
-                    A.setEntry(this.goTermIndex.get(currentGoTerm.getNumericId()), this.proteinIndices.get(uniqueAnnotation), 1.0 / count);
+                    A.set(this.goTermIndex.get(currentGoTerm.getNumericId()), this.proteinIndices.get(uniqueAnnotation), 1.0f / count);
                 }
             }
         }
         return A;
     }
 
-    private double getJaccardIndexWithoutIC(final double[] distributionProductOne, final double[] distributionProductTwo) {
+    private float getJaccardIndexWithoutIC(final float[] distributionProductOne, final float[] distributionProductTwo) {
         //0. gather data
-        double combinedSum = 0.0;
-        double sumProductOne = 0.0, sumProductTwo = 0.0;
+        float combinedSum = 0.0f;
+        float sumProductOne = 0.0f, sumProductTwo = 0.0f;
 
         for (int i = 0; i < this.leafIndices.length; i++) {
             //compute data independently
@@ -409,12 +407,12 @@ public class ISM_validImplementation {
         return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
     }
 
-    private double getJaccardIndexWithIC(final double[] distributionProductOne, final double[] distributionProductTwo) {
+    private float getJaccardIndexWithIC(final float[] distributionProductOne, final float[] distributionProductTwo) {
         //0. gather data
-        double combinedSum = 0;
-        double sumProductOne = 0, sumProductTwo = 0;
+        float combinedSum = 0.0f;
+        float sumProductOne = 0.0f, sumProductTwo = 0.0f;
 
-        final double invMaxAnnot = 1.0 / this.maxNumberOfAnnotations;
+        final float invMaxAnnot = 1.0f / (float) this.maxNumberOfAnnotations;
         for (int i = 0; i < this.leafIndices.length; i++) {
 
             //we need to fetch  the information content of the nodes if we use weighted jaccard.
@@ -429,8 +427,8 @@ public class ISM_validImplementation {
         return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
     }
 
-    private RealMatrix getISM() {
-        return (this.HSM.add(RWC)).scalarMultiply(0.5);
+    private Matrix getISM() {
+        return (this.HSM.plus(RWC)).times(0.5f);
     }
 
     //**************************************************************************

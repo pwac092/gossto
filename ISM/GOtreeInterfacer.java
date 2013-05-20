@@ -18,6 +18,7 @@ import GOtree.AnnotationFile;
 import GOtree.Assignment;
 import GOtree.GOTerm;
 import GOtree.GeneOntology;
+import GOtree.GeneOntologyException;
 import GOtree.GeneOntologyParser;
 import GOtree.Ontology;
 import GOtree.Propagation;
@@ -31,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import util.TinyLogger;
 
 /**
@@ -43,7 +43,7 @@ import util.TinyLogger;
 public class GOtreeInterfacer {
 
     private GeneOntology GO; //the gene ontology itself
-    private OpenMapRealMatrix BPAdjacencyMatrix, MFAdjacencyMatrix, CCAdjacencyMatrix; //the adjacency matrices for the three ontologies
+    //private Adjacency BPAdjacencyMatrix, MFAdjacencyMatrix, CCAdjacencyMatrix; //the adjacency matrices for the three ontologies
     private String[] GO_relations, geneIDs; //The relations linking the GO terms that we will be using
     private Assignment annotations; //the mapping of the annotations to the GO terms
     private GOTerm[] bpAxisOrd, mfAxisOrd, ccAxisOrd; //The axis for the adjacency matrices
@@ -57,7 +57,7 @@ public class GOtreeInterfacer {
     //'OBOpath' contains the file path for the OBO file, 'annoPath' contains the file path for the GOA file, 'relations' contains the GO relations we are using, 'evidenceCodes' contains
     //the evidence codes we're using, 'strategyChoice' is the propagation strategy to use, however this is always 1, and the two variables are
     //used for writing the log file if necessary & are used for thus as parameters in the other methods within this class
-    public GOtreeInterfacer(String OBOpath, String annoPath, String[] relations, String[] evidenceCodes, int strategyChoice, String dagChoice, TinyLogger logw) throws FileNotFoundException, IOException {
+    public GOtreeInterfacer(String OBOpath, String annoPath, String[] relations, String[] evidenceCodes, int strategyChoice, String dagChoice, TinyLogger logw) throws FileNotFoundException, IOException, GeneOntologyException {
         //all methods called from the constructor, no need to reference anything but the results produced and made available by the 'getter' methods
         //instantiates the log variables if necessary
         logwriter = logw;
@@ -104,7 +104,7 @@ public class GOtreeInterfacer {
     }
 
     //parses the OBO file specified by 'OBOpath'
-    private void generate_GO(String OBOpath) throws FileNotFoundException, IOException {
+    private void generate_GO(String OBOpath) throws FileNotFoundException, IOException, GeneOntologyException {
         GeneOntologyParser parser = new GeneOntologyParser();
         GOTerm.setRelations(this.GO_relations);
         GeneOntology ontology = parser.readFromOBOFile(OBOpath, false);
@@ -117,7 +117,7 @@ public class GOtreeInterfacer {
         if (!Arrays.asList(evidenceCodes).contains("ALL")) {
             this.annotations = annoFile.readAnnotationFile(annoPath, evidenceCodes);
         } else {
-            this.logwriter.showMessage("Watch out! We are reading all evidence codes!!!");
+            this.logwriter.showMessage("Note that all evidence codes are being read. Maybe your results are not 100% precise.");
             this.annotations = annoFile.readAnnotationFile(annoPath);            
         }
     }
@@ -173,7 +173,7 @@ public class GOtreeInterfacer {
                     i++;
                 }
 
-                this.BPAdjacencyMatrix = new OpenMapRealMatrix(bp.size(), bp.size());
+                //this.BPAdjacencyMatrix = new Adjacency(bp.size(), bp.size());
 
                 //set adjacencies' values ontology by ontology
                 logwriter.showMessage("Creating BP adjacency");
@@ -189,7 +189,7 @@ public class GOtreeInterfacer {
 
                             if (indexBP.containsKey(parent.getNumericId())) {
                                 int idx = indexBP.get(parent.getNumericId());
-                                this.BPAdjacencyMatrix.setEntry(currentIndex, idx, 1); //set a one indicating the connection in the 
+                                //this.BPAdjacencyMatrix.setEntry(currentIndex, idx, 1); //set a one indicating the connection in the 
                             }
 
                             //}
@@ -212,7 +212,7 @@ public class GOtreeInterfacer {
                     i++;
                 }
 
-                this.MFAdjacencyMatrix = new OpenMapRealMatrix(mf.size(), mf.size());
+                //this.MFAdjacencyMatrix = new Adjacency(mf.size(), mf.size());
 
                 //set adjacencies' values ontology by ontology
                 logwriter.showMessage("Creating MF adjacency");
@@ -228,7 +228,7 @@ public class GOtreeInterfacer {
                             //}
                             if (indexMF.containsKey(parent.getNumericId())) {
                                 int idx = indexMF.get(parent.getNumericId());
-                                this.MFAdjacencyMatrix.setEntry(currentIndex, idx, 1); //set a one indicating the connection in the 
+                                //this.MFAdjacencyMatrix.setEntry(currentIndex, idx, 1); //set a one indicating the connection in the 
                             }
                         }
                     }
@@ -247,7 +247,7 @@ public class GOtreeInterfacer {
                     i++;
                 }
 
-                this.CCAdjacencyMatrix = new OpenMapRealMatrix(cc.size(), cc.size());
+                //this.CCAdjacencyMatrix = new Adjacency(cc.size(), cc.size());
                 //set adjacencies' values ontology by ontology
                 logwriter.showMessage("Creating CC adjacency");
 
@@ -262,7 +262,7 @@ public class GOtreeInterfacer {
                             //}
                             if (indexCC.containsKey(parent.getNumericId())) {
                                 int idx = indexCC.get(parent.getNumericId());
-                                this.CCAdjacencyMatrix.setEntry(currentIndex, idx, 1); //set a one indicating the connection in the 
+                                //this.CCAdjacencyMatrix.setEntry(currentIndex, idx, 1); //set a one indicating the connection in the 
                             }
                         }
                     }
@@ -276,9 +276,10 @@ public class GOtreeInterfacer {
     //Either calls the propagate_Annotations() method if the end product is an HSM or uses the weighted propagation mechanism within this method
     //if the end product is an ISM
     //'ISM' determines the propagation method & 'strategyChoice' determines the method of HSM propagation (always going to be propagationMax)
-    private void propagator(int strategyChoice) {
-        System.out.println("Propagating");
+    private void propagator(int strategyChoice) throws IOException {
+        logwriter.log("Propagating");
         propagate_Annotations(strategyChoice);
+        logwriter.log("Propagated");
     }
 //Strips down adjacencies and their axis to only relevant information, the end product of this execution (HSM or ISM) specified by 'ISM' determines
 //how the stripping will be done
@@ -291,13 +292,13 @@ public class GOtreeInterfacer {
 
         for (String tree : this.ontologiesToProcess) {
             if (tree.equalsIgnoreCase("BP")) {
-                this.BPAdjacencyMatrix = stripDownAdjacency(this.BPAdjacencyMatrix, this.bpAxisOrd);
+                //this.BPAdjacencyMatrix = stripDownAdjacency(this.BPAdjacencyMatrix, this.bpAxisOrd);
                 this.bpAxisOrd = stripDownAxis(this.bpAxisOrd);
             } else if (tree.equalsIgnoreCase("MF")) {
-                this.MFAdjacencyMatrix = stripDownAdjacency(this.MFAdjacencyMatrix, this.mfAxisOrd);
+                //this.MFAdjacencyMatrix = stripDownAdjacency(this.MFAdjacencyMatrix, this.mfAxisOrd);
                 this.mfAxisOrd = stripDownAxis(this.mfAxisOrd);
             } else if (tree.equalsIgnoreCase("CC")) {
-                this.CCAdjacencyMatrix = stripDownAdjacency(this.CCAdjacencyMatrix, this.ccAxisOrd);
+                //this.CCAdjacencyMatrix = stripDownAdjacency(this.CCAdjacencyMatrix, this.ccAxisOrd);
                 this.ccAxisOrd = stripDownAxis(this.ccAxisOrd);
             }
         }
@@ -316,7 +317,8 @@ public class GOtreeInterfacer {
     }
 
     //remove columns and rows of terms without annotations for the matrix 'adjacency' with the axis 'axis'
-    private OpenMapRealMatrix stripDownAdjacency(OpenMapRealMatrix adjacency, GOTerm[] axis) {
+    /*
+    private Adjacency stripDownAdjacency(Adjacency adjacency, GOTerm[] axis) {
 
         //get number of terms with annotations
         final int n = adjacency.getRowDimension();
@@ -333,7 +335,7 @@ public class GOtreeInterfacer {
 
         if (counter > 0) {
 
-            OpenMapRealMatrix stripped = new OpenMapRealMatrix(counter, counter);
+            Adjacency stripped = new Adjacency(counter, counter);
             //strip matrix down
             int rowIndex = 0;
             //final int m = adjacency.getColumnDimension();
@@ -357,6 +359,8 @@ public class GOtreeInterfacer {
             return null;
         }
     }
+     * 
+     */
     //remove terms from the axis that don't have annotations for the axis; 'axis'
 
     private GOTerm[] stripDownAxis(GOTerm[] axis) {
@@ -427,17 +431,18 @@ public class GOtreeInterfacer {
         return this.ccAxisOrd;
     }
 
-    public OpenMapRealMatrix getBPAdjacencyMatrix() {
+    /*
+    public Adjacency getBPAdjacencyMatrix() {
         return this.BPAdjacencyMatrix;
     }
 
-    public OpenMapRealMatrix getCCAdjacencyMatrix() {
+    public Adjacency getCCAdjacencyMatrix() {
         return this.CCAdjacencyMatrix;
     }
 
-    public OpenMapRealMatrix getMFAdjacencyMatrix() {
+    public Adjacency getMFAdjacencyMatrix() {
         return this.MFAdjacencyMatrix;
-    }
+    }*/
 
     public String[] getGO_relations() {
         return this.GO_relations;

@@ -16,9 +16,8 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -33,20 +32,20 @@ public class Resnik extends HSM {
     }
 
     @Override
-    public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         assert (ontology >= 0 && ontology < 3);
         final int N = numGOtermsPerOntology[ontology];
         
         super.logwriter.showMessage("Size of the semsim matrix: " + N);
-        super.logwriter.showMessage("Size of the semsim matrix (in MBs): " + N*N*8.0/(1024*1024));
+        super.logwriter.showMessage("Size of the semsim matrix (in MBs): " + N*N*4.0/(1024*1024));
         
-        RealMatrix result = new Array2DRowRealMatrix(N, N);
+        Matrix result = new Matrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
-                double res = -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
-                result.setEntry(i, j, res);
-                result.setEntry(j, i, res);
+                float res = (float) -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
+                result.set(i, j, res);
+                result.set(j, i, res);
             }
         }
 
@@ -56,7 +55,7 @@ public class Resnik extends HSM {
     }
 
     @Override
-    public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         return super.geneWiseSimilarityByMaximum(ontology);
     }
 }

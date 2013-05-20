@@ -16,9 +16,8 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -33,25 +32,25 @@ public class Lin extends HSM {
     }
 
     @Override
-    public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         return super.geneWiseSimilarityByMaximum(ontology);
     }
 
     @Override
-    public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
 
         assert (ontology >= 0 && ontology < 3);
 
-        double M = Double.NEGATIVE_INFINITY; //getting M
+        float M = Float.NEGATIVE_INFINITY; //getting M
 
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new Array2DRowRealMatrix(N, N);
+        Matrix result = new Matrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
-                double linTop = -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
-                result.setEntry(i, j, linTop);
-                result.setEntry(j, i, linTop);
+                float linTop = (float) -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
+                result.set(i, j, linTop);
+                result.set(j, i, linTop);
 
                 if (linTop > M && linTop != 0) {
                     M = linTop; //get largest value for normalisation
@@ -60,20 +59,20 @@ public class Lin extends HSM {
         }
 
         //Lin normalisation:
-        double[] normalizedDiagonal = new double[N];
-        final double invM = 1.0 / M;
+        float [] normalizedDiagonal = new float [N];
+        final float invM = 1.0f / M;
         for (int i = 0; i < N; i++) {
-            normalizedDiagonal[i] = result.getEntry(i, i) * invM;
+            normalizedDiagonal[i] = result.get(i, i) * invM;
         }
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
                 //create the bottom of the lin equation using the extracted values and a 0.001 to prevent a division by 0
-                double linBottom = normalizedDiagonal[i] + normalizedDiagonal[j] + 0.001;
+                float linBottom = normalizedDiagonal[i] + normalizedDiagonal[j] + 0.001f;
                 //create the top of the lin equation, divide it by the bottom and save the resultant lin value
-                double val = 2.0 * (result.getEntry(i, j) * invM) / linBottom;
-                result.setEntry(i, j, val);
-                result.setEntry(j, i, val);
+                float val = 2.0f * (result.get(i, j) * invM) / linBottom;
+                result.set(i, j, val);
+                result.set(j, i, val);
             }
         }
 

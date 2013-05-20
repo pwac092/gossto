@@ -16,10 +16,9 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
 import java.util.HashSet;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -47,15 +46,15 @@ public class simGIC extends HSM {
     }
 
     @Override
-    public RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         System.out.println("#####SimGIC HSM#####");
         final int N = numGOtermsPerOntology[ontology];
-        RealMatrix result = new Array2DRowRealMatrix(N, N);
+        Matrix result = new Matrix(N, N);
         final int NUM_GENES = this.genes.length;
 
         // GeneGoups for any gene has all the ancestors of the GO terms annotated
@@ -84,7 +83,7 @@ public class simGIC extends HSM {
             if (!GeneGroups[i].isEmpty()) {
                 for (int j = i; j < NUM_GENES; j++) {
                     if (!GeneGroups[j].isEmpty()) {
-                        double intersectionVal = 0;
+                        float intersectionVal = 0.0f;
 
                         for (GOTerm go : GeneGroups[i])//get values that are unique to one or other set
                         {
@@ -100,7 +99,7 @@ public class simGIC extends HSM {
                             }
                         }
                         HashSet<GOTerm> union = new HashSet<GOTerm>();
-                        double unionVal = 0;
+                        float unionVal = 0.0f;
                         union.addAll(GeneGroups[i]); //get union of the two sets
                         union.addAll(GeneGroups[j]);
                         for (GOTerm go : union) {
@@ -108,9 +107,9 @@ public class simGIC extends HSM {
                             double ICtemp = this.annotations.countNumberOfGenesForGOTerm(go.getGOid());
                             unionVal += -Math.log(ICtemp / maxAnno);
                         }
-                        double semSim = intersectionVal / unionVal; //calculate similarity value
-                        result.setEntry(i, j, semSim);
-                        result.setEntry(j, i, semSim);
+                        float semSim = intersectionVal / unionVal; //calculate similarity value
+                        result.set(i, j, semSim);
+                        result.set(j, i, semSim);
                     }
                 }
             }

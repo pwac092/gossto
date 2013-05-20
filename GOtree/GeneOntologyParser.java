@@ -1,22 +1,20 @@
 /*This file is part of GOssTo.
-    GOssTo is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    GOssTo is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
-*/
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package GOtree;
 
-
-
-import java.io.BufferedReader; 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -64,13 +62,12 @@ public class GeneOntologyParser {
         name = "";
         ontology = "";
     }
-    
-    public GeneOntology readFromOBOFile(String OBOfileName) throws IOException, FileNotFoundException
-    {
+
+    public GeneOntology readFromOBOFile(String OBOfileName) throws IOException, FileNotFoundException, GeneOntologyException {
         return this.readFromOBOFile(OBOfileName, true);
     }
 
-    public GeneOntology readFromOBOFile(String OBOfileName, boolean useConsiderAsSynonym) throws IOException, FileNotFoundException {
+    public GeneOntology readFromOBOFile(String OBOfileName, boolean useConsiderAsSynonym) throws IOException, FileNotFoundException, GeneOntologyException {
         this.clear();
 
         BufferedReader reader = new BufferedReader(new FileReader(OBOfileName));
@@ -84,7 +81,7 @@ public class GeneOntologyParser {
 
         while (reader.ready()) {
             String line = reader.readLine().trim();
-           
+
             // we discard non useful information
             if (line.startsWith("xref") || line.startsWith("subset") || line.startsWith("synonym")
                     || line.startsWith("created_by:") || line.startsWith("creation_date")
@@ -172,8 +169,7 @@ public class GeneOntologyParser {
         result.putTermById(term, goId);
         is_a.put(goId, parents);
 
-        if (!this.alternative_ids.isEmpty())
-        {
+        if (!this.alternative_ids.isEmpty()) {
             for (String alternative_id : alternative_ids) {
                 result.putTermById(term, alternative_id);
             }
@@ -188,12 +184,22 @@ public class GeneOntologyParser {
         }
     }
 
-    private void adjustRelations() {
+    private void adjustRelations() throws GeneOntologyException {
 
         for (Map.Entry<String, List<String>> pair : this.is_a.entrySet()) {
             GOTerm term = result.getTermById(pair.getKey());
             for (String parent : pair.getValue()) {
                 GOTerm parent_term = result.getTermById(parent);
+                if (parent_term == null) {
+                    String message = "The Gene Ontology file is possibly corrupted."
+                            + " Term " + term.getGOid() + " points to term " + parent
+                            + " using the 'is_a' relationship. However, the term " + parent
+                            + " does not appear in your Gene Ontology file (probably it is obsolete).\n"
+                            + "If the error persists with a newer Gene Ontology file, substitute "
+                            + "the reference to " + parent + " in the term " + term.getGOid() + " by "
+                            + " one of the alternatives provided in its 'obsolete term' entry.";
+                    throw new GeneOntologyException(message);
+                }
                 term.addParent("is_a", parent_term);
                 parent_term.addChildren("is_a", term);
             }
@@ -208,6 +214,18 @@ public class GeneOntologyParser {
 
                     for (String relatedTerm : this.relations.get(baseTerm).get(relation)) {
                         GOTerm relatedGOTerm = result.getTermById(relatedTerm);
+
+                        if (relatedGOTerm == null) {
+                            String message = "The Gene Ontology file is possibly corrupted."
+                                    + " Term " + base.getGOid() + " points to term " + relatedTerm
+                                    + "using the '" + relation + "' relationship. However, the term " + relatedTerm
+                                    + " does not appear in your Gene Ontology file (probably it is obsolete).\n"
+                                    + "If the error persists with a newer Gene Ontology file, substitute "
+                                    + "the reference to " + relatedTerm + " in the term " + base.getGOid() + " by "
+                                    + " one of the alternatives provided in its 'obsolete term' entry.";
+                            throw new GeneOntologyException(message);
+                        }
+
                         base.addParent(relation, relatedGOTerm);
                         relatedGOTerm.addChildren(relation, base);
                     }

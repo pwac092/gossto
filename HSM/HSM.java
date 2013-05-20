@@ -16,6 +16,7 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import Jama.Matrix;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import util.TinyLogger;
 
 /**
@@ -124,9 +123,9 @@ public abstract class HSM {
         return maxAnnoNo;
     }
 
-    public abstract RealMatrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError;
+    public abstract Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError;
 
-    public abstract RealMatrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError;
+    public abstract Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError;
 
     //Determine the lowest common ancestor of two terms & normalise the probability by the largest annotation value in the relevant ontology
     protected double lowestCommonAncestor(Set<GOTerm> ancestorsOne, Set<GOTerm> ancestorsTwo, int dag) {
@@ -217,23 +216,23 @@ public abstract class HSM {
         return isAGraphBasedMeasure;
     }
 
-    protected double matrixMax(final RealMatrix mat) {
-        double maxi = Double.NEGATIVE_INFINITY;
+    protected float matrixMax(final Matrix mat) {
+        float maxi = Float.NEGATIVE_INFINITY;
         final int rows = mat.getRowDimension();
         final int cols = mat.getColumnDimension();
 
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
-                double v = mat.getEntry(i, j);
+                float v = mat.get(i, j);
                 maxi = maxi < v ? v : maxi;
             }
         }
         return maxi;
     }
 
-    protected RealMatrix geneWiseSimilarityByMaximum(int ontology) throws IOException, OutOfMemoryError {
+    protected Matrix geneWiseSimilarityByMaximum(int ontology) throws IOException, OutOfMemoryError {
         //compute the semantic similarity
-        RealMatrix termWise = this.calculateTermWiseSemanticSimilarity(ontology);
+        Matrix termWise = this.calculateTermWiseSemanticSimilarity(ontology);
 
         Map<Integer, Set<Integer>> dominates = this.computeDominancies(termWise);
 
@@ -298,8 +297,10 @@ public abstract class HSM {
 
         this.computedGenes = new String[NUM_GENES_ONTOLOGY];
         selectedGenes.toArray(this.computedGenes);
+        
+        this.logwriter.showMessage("Computing genewise semantic similarity by maximum (" + NUM_GENES_ONTOLOGY + " genes)");
 
-        RealMatrix result = new Array2DRowRealMatrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
+        Matrix result = new Matrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
 
         //which pair of terms annoating the genes is the most similar
 
@@ -311,11 +312,11 @@ public abstract class HSM {
                 //get genes annotating the second gene
                 final int[] goTerms_j = goIdsPerGene.get(selectedGenes.get(j));
 
-                double max = this.matrixMax(termWise.getSubMatrix(goTerms_i, goTerms_j));
+                float max = this.matrixMax(termWise.getMatrix(goTerms_i, goTerms_j));
 
                 // set matrix values
-                result.setEntry(i, j, max);
-                result.setEntry(j, i, max);
+                result.set(i, j, max);
+                result.set(j, i, max);
             }
         }
 
@@ -325,7 +326,7 @@ public abstract class HSM {
         return result;
     }
 
-    private Map<Integer, Set<Integer>> computeDominancies(RealMatrix x) {
+    private Map<Integer, Set<Integer>> computeDominancies(Matrix x) {
         System.err.println("Computing dominancies");
         final int m = x.getRowDimension();
         final int n = x.getRowDimension();
@@ -345,8 +346,8 @@ public abstract class HSM {
                 boolean greater = true, lesser = true;
 
                 for (int k = 0; k < n; ++k) {
-                    greater = greater && x.getEntry(i, k) >= x.getEntry(j, k);
-                    lesser = lesser && x.getEntry(i, k) < x.getEntry(j, k);
+                    greater = greater && x.get(i, k) >= x.get(j, k);
+                    lesser = lesser && x.get(i, k) < x.get(j, k);
 
                     if (!greater && !lesser) {
                         break;
