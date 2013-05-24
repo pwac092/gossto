@@ -1,16 +1,16 @@
 /*This file is part of GOssTo.
- GOssTo is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
- GOssTo is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -328,7 +328,8 @@ public class TerminalInterface {
                 //now go through them one at a time.
                 //so..match GO: first. after that, convert the rest of the string 
                 //into an atomic unit, and check for any digit. find exactly seven of them.
-                String goTermPattern = "go:\\d.*/{7,/}";
+                //String goTermPattern = "go:\\d.*/{7,/}";
+                String goTermPattern = "go:\\d{7}";
                 success = true;
                 for (String current : providedList.split(",")) {
                     //1. check the format of "current"
@@ -414,6 +415,7 @@ public class TerminalInterface {
                 }
 
                 System.out.println("List the relations separating them with a comma. Press enter once you are done.");
+                System.out.println("Keep in mind that the 'is_a' relation is always added.");
                 System.out.print(">? ");
 
                 String providedRelations = this.userInput.next().toLowerCase();

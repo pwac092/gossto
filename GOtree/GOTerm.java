@@ -219,6 +219,9 @@ public class GOTerm implements Comparable<GOTerm> {
 
     public static void setRelations(String[] rel) {
         relations = new HashSet<String>(Arrays.asList(rel));
+        /** Is_a is always added, otherwise the DAG will be
+         * disconnected */
+        relations.add("is_a");
     }
 
     public boolean isRoot(final String rel) {
