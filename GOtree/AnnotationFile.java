@@ -1,18 +1,17 @@
 /*This file is part of GOssTo.
-    GOssTo is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    GOssTo is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package GOtree;
 
 /*
@@ -42,8 +41,6 @@ public class AnnotationFile {
     /**
      * Experimental codes used in the Gene Ontology Annotation
      */
-    
-
     private final static Set<String> experimentalCodes = new HashSet<String>(Arrays.asList(new String[]{"EXP", "IDA", "IPI", "IMP", "IGI", "IEP", "TAS", "IC"}));
     /**
      * All evidence codes used in the Gene Ontology Annotation, except IEA
@@ -52,7 +49,8 @@ public class AnnotationFile {
     /**
      * All evidence codes used in the Gene Ontology Annotation
      */
-    private final static Set<String> allCodes = new HashSet<String>(Arrays.asList(new String[]{"EXP", "IDA", "IPI", "IMP", "IGI", "IEP", "TAS", "IC", "ISS", "ISO", "ISA", "ISM", "IGC", "IBA", "IBD", "IKR", "IRD", "RCA", "NAS", "ND", "IEA","NR"}));
+    private final static Set<String> allCodes = new HashSet<String>(Arrays.asList(new String[]{"EXP", "IDA", "IPI", "IMP", "IGI", "IEP", "TAS", "IC", "ISS", "ISO", "ISA", "ISM", "IGC", "IBA", "IBD", "IKR", "IRD", "RCA", "NAS", "ND", "IEA", "NR"}));
+    
     /**
      * Identifiers of the proteome which match this annotation file
      */
@@ -123,6 +121,10 @@ public class AnnotationFile {
         return this.strategy.getSetOfUnParsedProteins();
     }
 
+    public static void useUniProtIds(boolean val) {
+        AnnotationFileWithoutExternalProteinIds.setUseUniProtIds(val);
+    }
+
     public Assignment readAnnotationFileWithProteinIdentifiers(String fileName, Set<String> proteinIds, int evidenceCodes) throws IOException, FileNotFoundException {
 
         Set<String> setOfEvidenceCodes = this.getSetOfEvidenceCodes(evidenceCodes);
@@ -130,7 +132,7 @@ public class AnnotationFile {
         this.strategy.setProteinIdentifiers(proteinIds);
         return this.readFromFile(fileName, setOfEvidenceCodes);
     }
-    
+
     // reads annotation file with all evidence codes
     public Assignment readAnnotationFile(String fileName) throws IOException, FileNotFoundException {
         this.strategy = new AnnotationFileWithoutExternalProteinIds();
@@ -146,21 +148,21 @@ public class AnnotationFile {
     }
 
     /*public static void main(String[] args) throws FileNotFoundException, IOException {
-        AnnotationFile file = new AnnotationFile();
-
-        Assignment ass = null;
-
-        String names[] = {"gene_association.PAMGO_Oomycetes"};//{"goa1", "goa2", "goa3"};
-
-        for (String name : names) {
-            System.err.println("Reading file " + name + " (all. codes)");
-            ass = file.readAnnotationFile(name, AnnotationFile.USE_ALL);
-            System.err.println("=====================================================================");
-        }
-
-        for (String name : names) {
-            System.err.println("Reading file " + name + " (exp. codes)");
-            ass = file.readAnnotationFile(name, AnnotationFile.USE_EXP);
-        }
+    AnnotationFile file = new AnnotationFile();
+    
+    Assignment ass = null;
+    
+    String names[] = {"gene_association.PAMGO_Oomycetes"};//{"goa1", "goa2", "goa3"};
+    
+    for (String name : names) {
+    System.err.println("Reading file " + name + " (all. codes)");
+    ass = file.readAnnotationFile(name, AnnotationFile.USE_ALL);
+    System.err.println("=====================================================================");
+    }
+    
+    for (String name : names) {
+    System.err.println("Reading file " + name + " (exp. codes)");
+    ass = file.readAnnotationFile(name, AnnotationFile.USE_EXP);
+    }
     }*/
 }

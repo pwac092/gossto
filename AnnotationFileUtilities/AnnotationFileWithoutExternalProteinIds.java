@@ -1,17 +1,17 @@
 /*This file is part of GOssTo.
-    GOssTo is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    GOssTo is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
-*/
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /*
  * To change this template, choose Tools | Templates
@@ -27,7 +27,13 @@ import java.util.Set;
  */
 public class AnnotationFileWithoutExternalProteinIds implements AnnotationFileStrategy {
 
+    private static boolean useUniProtIds = true;
+
     public AnnotationFileWithoutExternalProteinIds() {
+    }
+
+    public static void setUseUniProtIds(boolean useUniProtIds) {
+        AnnotationFileWithoutExternalProteinIds.useUniProtIds = useUniProtIds;
     }
 
     @Override
@@ -47,6 +53,10 @@ public class AnnotationFileWithoutExternalProteinIds implements AnnotationFileSt
 
     @Override
     public String getProteinId(String[] fieldsGOAnnotation) {
-        return fieldsGOAnnotation[2];
+        if (useUniProtIds) {
+            return fieldsGOAnnotation[1];
+        } else {
+            return fieldsGOAnnotation[2];
+        }
     }
 }

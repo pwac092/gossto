@@ -1,16 +1,16 @@
 /*This file is part of GOssTo.
- GOssTo is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
- GOssTo is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -45,7 +45,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
         //#####cli code#####
         //Setting up the parameter labels for console input
         Options paramOptions = new Options();
-        
+
         paramOptions.addOption("help", false, "Shows this message");
         paramOptions.addOption("version", false, "v0.1 Aug 2012");
         paramOptions.addOption("getw", false, "Show warranty disclaimer section of the GNU GPL license");
@@ -62,7 +62,9 @@ public class ConsoleParameterValidator extends ParameterValidator {
         paramOptions.addOption("hsmoutput", true, "Enter the name and location the HSM outputs will be stored at");
         paramOptions.addOption("ismoutput", true, "Enter the name and location the ISM outputs will be stored at");
         paramOptions.addOption("weightedJaccard", true, "Select whether to weight the Jaccard Index for genewise ISM with the information content");
-        
+        paramOptions.addOption("useUniProtIds", true, "Select whether to use UniProtKB accession number instead of human-readable gene ids");
+        paramOptions.addOption("matrixStyle", true, "Select whether to print the file in matrix style or in triplet style");
+
         try {
             cmd = parser.parse(paramOptions, args);
             //administrative parameters
@@ -226,7 +228,6 @@ public class ConsoleParameterValidator extends ParameterValidator {
                 System.exit(-1);
             }
 
-
             if (cmd.hasOption("ismoutput")) //ISM output file path and name
             {
                 this.ismFileName = cmd.getOptionValue("ismoutput");
@@ -236,6 +237,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
                 System.err.println("ERROR: ISM Output Path Not Specified");
                 System.exit(-1);
             }
+
             if (cmd.hasOption("weightedJaccard")) //check for weightedJaccard
             {
                 if (cmd.getOptionValue("weightedJaccard").toLowerCase().equals("true")) {
@@ -251,6 +253,30 @@ public class ConsoleParameterValidator extends ParameterValidator {
                 logger.logAndCloseWriter("############ ERROR: weightedJaccard option has to be set when computing ISM");
                 System.err.println("ERROR: weightedJaccard option has to be set when computing ISM");
                 System.exit(-1);
+            }
+
+            if (cmd.hasOption("useUniProtIds")) {
+                if (cmd.getOptionValue("useUniProtIds").toLowerCase().equals("true")) {
+                    this.useUniProtIds = true;
+                } else if (cmd.getOptionValue("useUniProtIds").toLowerCase().equals("false")) {
+                    this.useUniProtIds = false;
+                } else { //just in case something weird was written.
+                    logger.logAndCloseWriter("############ ERROR: Invalid choice for useUniProtIds option");
+                    System.err.println("ERROR: Invalid choice for useUniProtIds option");
+                    System.exit(-1);
+                }
+            }
+
+            if (cmd.hasOption("matrixStyle")) {
+                if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("true")) {
+                    this.matrixStyle = true;
+                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("false")) {
+                    this.matrixStyle = false;
+                } else { //just in case something weird was written.
+                    logger.logAndCloseWriter("############ ERROR: Invalid choice for matrixStyle option");
+                    System.err.println("ERROR: Invalid choice for matrixStyle option");
+                    System.exit(-1);
+                }
             }
 
         } catch (ParseException e) {

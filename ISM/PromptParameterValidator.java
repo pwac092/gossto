@@ -118,5 +118,8 @@ public class PromptParameterValidator extends ParameterValidator {
                 this.notes.add("all genes");
             }
         }
+        
+        this.useUniProtIds = ui.requestUniProtIds();
+        this.matrixStyle = ui.requestMatrixStyle();
     }
 }

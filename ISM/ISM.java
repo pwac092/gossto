@@ -14,6 +14,7 @@ along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
+import GOtree.AnnotationFile;
 import GOtree.GOTerm;
 import GOtree.GeneOntologyException;
 import Jama.Matrix;
@@ -26,7 +27,7 @@ import util.TinyLogger;
 
 /**
  *
- * @author Samuel Heron
+ * @author Samuel Heron, Alfonso E. Romero
  */
 //Contains the instructions for running GOssTo, remove this class to use GOssTo as a library
 public class ISM {
@@ -88,6 +89,15 @@ public class ISM {
      */
     private boolean weightedJaccard;
     /**
+     * Flag that tells us if the printing should be done in matrix
+     * style (true), or in triplet style (false)
+     */
+    private boolean matrixStyle;
+    /** Tells us if we are using UniProtKB accesion numbers (true) or
+     * gene names to identify proteins
+     */
+    private boolean useUniProtIds;
+    /**
      * Utilities to make the strings validation
      */
     IoValidation validator;
@@ -133,7 +143,7 @@ public class ISM {
             paramValidator.validate(this.validator, this.logger);
             this.setParametersPrompt(paramValidator);
         }
-
+        AnnotationFile.useUniProtIds(this.useUniProtIds);
         this.logger.log("All parameters validated, except GO terms");
     }
 
@@ -152,6 +162,8 @@ public class ISM {
         this.isIsmToBeComputed = validator.isIsmChoice();
         this.termWise = validator.isTermWise();
         this.weightedJaccard = validator.isWeightedJaccard();
+        this.useUniProtIds = validator.isUseUniProtIds();
+        this.matrixStyle = validator.isMatrixStyle();
     }
 
     private void setParametersPrompt(ParameterValidator validator) {
@@ -286,7 +298,7 @@ public class ISM {
             System.err.println("ERROR: Insufficient memory to run GOSSTO with the chosen parameter set.");
             System.err.println("Please, launch the Java Virtual Machine with at least 2 GB of memory,");
             System.err.println("by setting 'java -Xmx2G ... '. Check your systems documentation for");
-            System.err.println("specific options."); 
+            System.err.println("specific options.");
             System.exit(-1);
         } catch (GeneOntologyException ex) {
             System.err.println("ERROR: problem with the Gene Ontology file.");
@@ -344,7 +356,11 @@ public class ISM {
 
             // (b) we print the results of the HSM to a file...            
             logger.showMessage("##### Printing HSM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
-            validator.printResultsToFile(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+            if (this.matrixStyle) {
+                validator.printResultsToFile(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+            } else {
+                validator.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+            }
 
             // (c) if we are to compute an ISM...
             if (this.isIsmToBeComputed) {
@@ -365,7 +381,11 @@ public class ISM {
                 // and we print the results of the HSM to a file...            
                 logger.showMessage("##### Printing ISM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
                 logger.showMemoryUsage();
-                validator.printResultsToFile(ontology, ismResults, matrixAxis, this.ismFileName, this.notes, goIDsAsGOTerm, genesRows);
+                if (this.matrixStyle) {
+                    validator.printResultsToFile(ontology, ismResults, matrixAxis, this.ismFileName, this.notes, goIDsAsGOTerm, genesRows);
+                } else {
+                    validator.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+                }
             }
 
         }

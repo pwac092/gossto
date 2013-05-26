@@ -497,4 +497,32 @@ public class TerminalInterface {
         System.out.println("--------------------------------------------------------------------------------------------------------------------");
         System.out.println();
     }
+    
+    boolean requestMatrixStyle() {
+        System.out.println("Would you like to print the file in matrix style (y) or triplet style (n)");
+        System.out.print(">? ");
+        String choice = userInput.next();
+        if (choice.toLowerCase().equals("y")) {
+            return true;
+        } else if (choice.toLowerCase().equals("n")) {
+            return false;
+        } else {
+            incorrect(choice);
+        }
+        return false;        
+    }
+
+    boolean requestUniProtIds() {
+        System.out.println("Would you like to use UniProtKB accession numbers (y) or gene ids (n)");
+        System.out.print(">? ");
+        String choice = userInput.next();
+        if (choice.toLowerCase().equals("y")) {
+            return true;
+        } else if (choice.toLowerCase().equals("n")) {
+            return false;
+        } else {
+            incorrect(choice);
+        }
+        return false;
+    }
 }

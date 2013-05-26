@@ -1,16 +1,16 @@
 /*This file is part of GOssTo.
- GOssTo is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+GOssTo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
- GOssTo is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+GOssTo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -40,7 +40,9 @@ public abstract class ParameterValidator {
     protected ArrayList<String> notes;
     protected boolean ownHSM;
     protected boolean weightedJaccard;
-    
+    protected boolean matrixStyle;
+    protected boolean useUniProtIds;
+
     protected ParameterValidator() {
         oboFile = "";
         goaFile = "";
@@ -60,6 +62,8 @@ public abstract class ParameterValidator {
         termWise = true;
         weightedJaccard = false;
         ownHSM = false;
+        this.useUniProtIds = true;
+        this.matrixStyle = true;
     }
 
     public abstract void validate(IoValidation validate, TinyLogger logger) throws FileNotFoundException, IOException;
@@ -123,4 +127,14 @@ public abstract class ParameterValidator {
     public boolean isWeightedJaccard() {
         return weightedJaccard;
     }
+
+    public boolean isMatrixStyle() {
+        return matrixStyle;
+    }
+
+    public boolean isUseUniProtIds() {
+        return useUniProtIds;
+    }
+    
+    
 }
