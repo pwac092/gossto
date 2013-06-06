@@ -498,18 +498,20 @@ public class TerminalInterface {
         System.out.println();
     }
     
-    boolean requestMatrixStyle() {
-        System.out.println("Would you like to print the file in matrix style (y) or triplet style (n)");
+    int requestMatrixStyle() {
+        System.out.println("Would you like to print the file in matrix style (m), triplet style (t) or both (b)");
         System.out.print(">? ");
         String choice = userInput.next();
-        if (choice.toLowerCase().equals("y")) {
-            return true;
-        } else if (choice.toLowerCase().equals("n")) {
-            return false;
+        if (choice.toLowerCase().equals("m")) {
+            return ISM.MATRIX_STYLE;
+        } else if (choice.toLowerCase().equals("t")) {
+            return ISM.TRIPLET_STYLE;
+        } else if (choice.toLowerCase().equals("b")) {
+            return ISM.BOTH_FILES;
         } else {
             incorrect(choice);
         }
-        return false;        
+        return -1;        
     }
 
     boolean requestUniProtIds() {

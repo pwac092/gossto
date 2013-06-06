@@ -62,8 +62,8 @@ public class ConsoleParameterValidator extends ParameterValidator {
         paramOptions.addOption("hsmoutput", true, "Enter the name and location the HSM outputs will be stored at");
         paramOptions.addOption("ismoutput", true, "Enter the name and location the ISM outputs will be stored at");
         paramOptions.addOption("weightedJaccard", true, "Select whether to weight the Jaccard Index for genewise ISM with the information content");
-        paramOptions.addOption("useUniProtIds", true, "Select whether to use UniProtKB accession number instead of human-readable gene ids");
-        paramOptions.addOption("matrixStyle", true, "Select whether to print the file in matrix style or in triplet style");
+        paramOptions.addOption("useUniProtIds", true, "Select whether to use UniProtKB accession number instead of human-readable gene ids (has only effect in genewise calculations)");
+        paramOptions.addOption("matrixStyle", true, "Select whether to print the file in matrix style (m) in triplet style (t) or both files (b)");
 
         try {
             cmd = parser.parse(paramOptions, args);
@@ -268,10 +268,12 @@ public class ConsoleParameterValidator extends ParameterValidator {
             }
 
             if (cmd.hasOption("matrixStyle")) {
-                if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("true")) {
-                    this.matrixStyle = true;
-                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("false")) {
-                    this.matrixStyle = false;
+                if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("m")) {
+                    this.matrixStyle = ISM.MATRIX_STYLE;
+                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("t")) {
+                    this.matrixStyle = ISM.TRIPLET_STYLE;
+                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("b")) {
+                    this.matrixStyle = ISM.BOTH_FILES;
                 } else { //just in case something weird was written.
                     logger.logAndCloseWriter("############ ERROR: Invalid choice for matrixStyle option");
                     System.err.println("ERROR: Invalid choice for matrixStyle option");
