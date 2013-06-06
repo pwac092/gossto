@@ -1,0 +1,28 @@
+  ______   ______   ______   ______   ______  ______    
+ /\  ___\ /\  __ \ /\  ___\ /\  ___\ /\__  _\/\  __ \   
+ \ \ \__ \\ \ \/\ \\ \___  \\ \___  \\/_/\ \/\ \ \/\ \  
+  \ \_____\\ \_____\\/\_____\\/\_____\  \ \_\ \ \_____\ 
+    \/_____/ \/_____/ \/_____/ \/_____/   \/_/  \/_____/ 
+
+
+Welcome to GOssTo, the Gene Ontology Semantic Similarity Tool!
+
+GOssTo is a software system for calculating semantic similarities between gene products in the Gene Ontology.
+GOssTo implements the Random Walk Contribution, improving the accuracy of similarity measures.
+For Yang's et. al description of the method:
+
+-> Improving GO semantic similarity measures by exploring the ontology beneath the terms and modelling uncertainty
+   Bioinformatics, vol. 28, iss. 10, pp. 1383-1389, 2012.
+
+If you use GOssTo, please cite it.
+
+-> GOssTo: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology
+   To appear in Bioinformatics.
+
+PaccanaroLab: http://www.paccanarolab.org
+Valentini Lab: http://homes.di.unimi.it/~valenti/index.html
+
+The official repository for the code is in github:
+
+-> https://github.com/pwac092/gossto
+

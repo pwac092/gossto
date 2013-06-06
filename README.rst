@@ -1,0 +1,42 @@
+::
+	 ______   ______   ______   ______   ______  ______    
+ 	/\  ___\ /\  __ \ /\  ___\ /\  ___\ /\__  _\/\  __ \   
+	\ \ \__ \\ \ \/\ \\ \___  \\ \___  \\/_/\ \/\ \ \/\ \  
+	 \ \_____\\ \_____\\/\_____\\/\_____\  \ \_\ \ \_____\ 
+	  \/_____/ \/_____/ \/_____/ \/_____/   \/_/  \/_____/ 
+
+
+Introduction
+============
+
+Welcome to GOssTo, the Gene Ontology Semantic Similarity Tool!
+
+GOssTo is a software system for calculating *semantic similarities* between gene products in the Gene Ontology.
+GOssTo implements the **Random Walk Contribution**, improving the accuracy of existing similarity measures.
+
+Check Yang's *et al* for a description of the method:
+
+	*Improving GO semantic similarity measures by exploring the ontology beneath the terms and modelling uncertainty*, Bioinformatics, **28** (10), 1383-1389, 2012.
+
+If you use GOssTo, please cite it:
+
+	*GOssTo: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology*, To appear in Bioinformatics.
+
+This is a joint work of the following two labs:
+
+PaccanaroLab: http://www.paccanarolab.org
+Valentini Lab: http://homes.di.unimi.it/~valenti/index.html
+
+The official repository for the code is in GitHub: https://github.com/pwac092/gossto
+
+Requirements for compiling GOssTo
+=================================
+
+GOssTo is written in Java. You would need *Java 6 or greater* to compile it. Also, you would need the Apache Commons CLI library (http://commons.apache.org/proper/commons-cli/), which is not included with these sources.
+
+We strongly recommend you using a IDE for developing. A Java project can be easily created with these source files with, for instance, NetBeans.
+
+Getting a binary version
+========================
+
+The GitHub repository only provides the source files for GOssTo. If you are looking for a binary version (jar file), you will have to go to the official GOssTo webpage, located here: http://www.paccanarolab.org/gossto/. Also, you might be interested in trying GOssTo as a web application called GOssToWeb (located here: http://www.paccanarolab.org/gosstoweb).
