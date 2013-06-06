@@ -23,15 +23,15 @@ If you use GOssTo, please cite it:
 
 This is a joint work of the following two labs:
 
-**PaccanaroLab**: http://www.paccanarolab.org
-**Valentini Lab**: http://homes.di.unimi.it/~valenti/index.html
+* **PaccanaroLab**: http://www.paccanarolab.org
+* **Valentini Lab**: http://homes.di.unimi.it/~valenti/index.html
 
 The official repository for the code is in GitHub: https://github.com/pwac092/gossto
 
 Requirements for compiling GOssTo
 =================================
 
-GOssTo is written in Java. You would need *Java 6 or greater* to compile it. Also, you would need the Apache Commons CLI library (http://commons.apache.org/proper/commons-cli/), which is not included with these sources.
+GOssTo is written in Java. You would need **Java 6 or greater** to compile it. Also, you would need the Apache Commons CLI library (http://commons.apache.org/proper/commons-cli/), which is not included with these sources.
 
 We strongly recommend you using a IDE for developing. A Java project can be easily created with these source files with, for instance, NetBeans.
 

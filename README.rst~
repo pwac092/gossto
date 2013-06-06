@@ -1,10 +1,9 @@
-::
-	 ______   ______   ______   ______   ______  ______    
- 	/\  ___\ /\  __ \ /\  ___\ /\  ___\ /\__  _\/\  __ \   
-	\ \ \__ \\ \ \/\ \\ \___  \\ \___  \\/_/\ \/\ \ \/\ \  
-	 \ \_____\\ \_____\\/\_____\\/\_____\  \ \_\ \ \_____\ 
-	  \/_____/ \/_____/ \/_____/ \/_____/   \/_/  \/_____/ 
-
+======
+GOssTo
+======
+----------------------------------------
+A Gene Ontology Semantic Similarity Tool
+----------------------------------------
 
 Introduction
 ============
@@ -24,8 +23,8 @@ If you use GOssTo, please cite it:
 
 This is a joint work of the following two labs:
 
-PaccanaroLab: http://www.paccanarolab.org
-Valentini Lab: http://homes.di.unimi.it/~valenti/index.html
+* **PaccanaroLab**: http://www.paccanarolab.org
+* **Valentini Lab**: http://homes.di.unimi.it/~valenti/index.html
 
 The official repository for the code is in GitHub: https://github.com/pwac092/gossto
 
@@ -39,4 +38,12 @@ We strongly recommend you using a IDE for developing. A Java project can be easi
 Getting a binary version
 ========================
 
-The GitHub repository only provides the source files for GOssTo. If you are looking for a binary version (jar file), you will have to go to the official GOssTo webpage, located here: http://www.paccanarolab.org/gossto/. Also, you might be interested in trying GOssTo as a web application called GOssToWeb (located here: http://www.paccanarolab.org/gosstoweb).
+The GitHub repository only provides the source files for GOssTo. If you are looking for a *binary* version (jar file), you will have to go to the official GOssTo webpage, located here: http://www.paccanarolab.org/gossto/. Also, you might be interested in trying GOssTo as a web application called *GOssToWeb* (located here: http://www.paccanarolab.org/gosstoweb).
+
+Questions, comments
+===================
+
+If you have a question or a comment about *GOssTo* or you think you have found a bug, feel free to `contact me`_.
+
+.. _contact me: H.J.CanizaVierci(AT)rhul.ac.uk
+
