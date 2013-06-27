@@ -92,7 +92,7 @@ public class ISM {
      * Flag that tells us if the printing should be done in matrix
      * style (true), or in triplet style (false)
      */
-    private boolean matrixStyle;
+    private int matrixStyle;
     /** Tells us if we are using UniProtKB accesion numbers (true) or
      * gene names to identify proteins
      */
@@ -110,6 +110,9 @@ public class ISM {
      * files
      */
     private ArrayList<String> notes;
+    public static final int MATRIX_STYLE = 0;
+    public static final int TRIPLET_STYLE = 1;
+    public static final int BOTH_FILES = 2;
 
     /**
      * Empty constructor
@@ -163,7 +166,7 @@ public class ISM {
         this.termWise = validator.isTermWise();
         this.weightedJaccard = validator.isWeightedJaccard();
         this.useUniProtIds = validator.isUseUniProtIds();
-        this.matrixStyle = validator.isMatrixStyle();
+        this.matrixStyle = validator.getMatrixStyle();
     }
 
     private void setParametersPrompt(ParameterValidator validator) {
@@ -236,7 +239,7 @@ public class ISM {
             if (!termsNotFound.isEmpty()) {
                 int num = termsNotFound.size();
                 if (num > 1) {
-                    logger.showMessage("Warning: " + num + " of the specified GO terms could not be found. Details:");
+                    logger.showMessage("Warning: " + num + " of the specified GO terms could not be found.\nDetails:");
                 } else {
                     logger.showMessage("Warning: one of the specified GO terms could not be found. Details:");
                 }
@@ -356,10 +359,12 @@ public class ISM {
 
             // (b) we print the results of the HSM to a file...            
             logger.showMessage("##### Printing HSM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
-            if (this.matrixStyle) {
+            if (this.matrixStyle == ISM.MATRIX_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
                 validator.printResultsToFile(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
-            } else {
-                validator.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+            }
+
+            if (this.matrixStyle == ISM.TRIPLET_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
+                validator.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName + "_triplet", this.notes, goIDsAsGOTerm, genesRows);
             }
 
             // (c) if we are to compute an ISM...
@@ -381,10 +386,11 @@ public class ISM {
                 // and we print the results of the HSM to a file...            
                 logger.showMessage("##### Printing ISM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
                 logger.showMemoryUsage();
-                if (this.matrixStyle) {
+                if (this.matrixStyle == ISM.MATRIX_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
                     validator.printResultsToFile(ontology, ismResults, matrixAxis, this.ismFileName, this.notes, goIDsAsGOTerm, genesRows);
-                } else {
-                    validator.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+                }
+                if (this.matrixStyle == ISM.TRIPLET_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
+                    validator.printeResultsToFileTripletStyle(ontology, ismResults, matrixAxis, this.ismFileName + "_triplet", this.notes, goIDsAsGOTerm, genesRows);
                 }
             }
 

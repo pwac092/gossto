@@ -191,13 +191,13 @@ public class GeneOntologyParser {
             for (String parent : pair.getValue()) {
                 GOTerm parent_term = result.getTermById(parent);
                 if (parent_term == null) {
-                    String message = "The Gene Ontology file is possibly corrupted."
-                            + " Term " + term.getGOid() + " points to term " + parent
-                            + " using the 'is_a' relationship. However, the term " + parent
+                    String message = "The Gene Ontology file is possibly corrupted.\n"
+                            + " Term " + term.getGOid() + " points to term " + parent + "\n"
+                            + " using the 'is_a' relationship. However, the term " + parent + "\n"
                             + " does not appear in your Gene Ontology file (probably it is obsolete).\n"
-                            + "If the error persists with a newer Gene Ontology file, substitute "
-                            + "the reference to " + parent + " in the term " + term.getGOid() + " by "
-                            + " one of the alternatives provided in its 'obsolete term' entry.";
+                            + "If the error persists with a newer Gene Ontology file, substitute "+ "\n"
+                            + "the reference to " + parent + " in the term " + term.getGOid() + " by\n"
+                            + " one of the alternatives provided in its 'obsolete term' entry.\n";
                     throw new GeneOntologyException(message);
                 }
                 term.addParent("is_a", parent_term);

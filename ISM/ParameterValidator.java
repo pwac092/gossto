@@ -40,7 +40,7 @@ public abstract class ParameterValidator {
     protected ArrayList<String> notes;
     protected boolean ownHSM;
     protected boolean weightedJaccard;
-    protected boolean matrixStyle;
+    protected int matrixStyle;
     protected boolean useUniProtIds;
 
     protected ParameterValidator() {
@@ -63,7 +63,7 @@ public abstract class ParameterValidator {
         weightedJaccard = false;
         ownHSM = false;
         this.useUniProtIds = true;
-        this.matrixStyle = true;
+        this.matrixStyle = ISM.MATRIX_STYLE;
     }
 
     public abstract void validate(IoValidation validate, TinyLogger logger) throws FileNotFoundException, IOException;
@@ -128,7 +128,7 @@ public abstract class ParameterValidator {
         return weightedJaccard;
     }
 
-    public boolean isMatrixStyle() {
+    public int getMatrixStyle() {
         return matrixStyle;
     }
 

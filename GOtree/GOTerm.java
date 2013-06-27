@@ -189,7 +189,7 @@ public class GOTerm implements Comparable<GOTerm> {
             }
         } else {
             throw new IllegalArgumentException("ERROR: The relation " + relation + " is not being"
-                    + " parsed in this instance of the Gene Ontology");
+                    + " parsed in this instance of the GO");
         }
     }
 

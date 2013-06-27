@@ -119,7 +119,9 @@ public class PromptParameterValidator extends ParameterValidator {
             }
         }
         
-        this.useUniProtIds = ui.requestUniProtIds();
+        if (!this.termWise)
+            this.useUniProtIds = ui.requestUniProtIds();
+        
         this.matrixStyle = ui.requestMatrixStyle();
     }
 }

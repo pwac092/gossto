@@ -68,7 +68,8 @@ public class TerminalInterface {
     //Asks the user whether they'd like to pick the HSM method from a list or enter its name
     public boolean usingOwnHSM() {
         String choice = "";
-        System.out.println("Would you like to pick an HSM from a list? (y) or enter the name of the desired HSM? (n)");
+        System.out.println("Would you like to pick an HSM from a list? (y) ");
+        System.out.println("or enter the name of the desired HSM? (n)");
         System.out.print(">? ");
         choice = this.userInput.next();
         if (choice.toLowerCase().equals("y") == true) {
@@ -107,7 +108,8 @@ public class TerminalInterface {
     public String requestHSMChoice(boolean termwise) {
         String chosenHSM = "";
         int hsmChoice = 0;
-        System.out.println("Please select the Host Similarity Measure (HSM) that you would like to use from the following list: ");
+        System.out.println("Please select the Host Similarity Measure (HSM) that you would like to use ");
+        System.out.println("from the following list: ");
         System.out.println();
         System.out.println("Termwise & Genewise Measures:");
         System.out.println("1. Resnik");
@@ -207,7 +209,8 @@ public class TerminalInterface {
 
     public String[] requestEvidenceCodes() {
         String[] choice = null;
-        System.out.println("Would you like to choose which evidence codes will be accepted? (y / n for default)");
+        System.out.println("Would you like to choose which evidence codes");
+        System.out.println("will be accepted? (y / n for default)");
         System.out.println("The default list is: EXP, IDA, IPI, IMP, IGI, IEP, TAS, IC"); //default
         System.out.print(">? ");
         String yesOrNo = this.userInput.next();
@@ -237,7 +240,8 @@ public class TerminalInterface {
                     countAppearances.put(rel, 0);
                 }
 
-                System.out.println("List the evidence codes separating them with a comma. Press enter once you are done.");
+                System.out.println("List the evidence codes separating them with a comma.");
+                System.out.println("Press enter once you are done.");
                 System.out.print(">? ");
 
                 String providedList = this.userInput.next().toLowerCase();
@@ -384,7 +388,8 @@ public class TerminalInterface {
     //Requests the relations the user wishes to use
     public String[] requestRelations() {
         String choice = "";
-        System.out.println("By default this program will only use the 'is_a' GO relationship, would you like to include more relations? (y / n for default)");
+        System.out.println("By default this program will only use the 'is_a' GO relationship.");
+        System.out.println("Would you like to include more relations? (y / n for default)");
         System.out.print(">? ");
         choice = userInput.next();
 
@@ -455,7 +460,6 @@ public class TerminalInterface {
     }
 
     public void farewell() {
-
         System.out.println("#####Printing Complete#####");
         System.out.println();
         System.out.println("Thank you for using GOssTo.");
@@ -464,52 +468,49 @@ public class TerminalInterface {
     //welcome message displayed on launch of GOssTo, contains GNU GPL info
     public void welcomer() {
         System.out.println();
-        System.out.println("******************************************************************************************************************");
-
-        System.out.println("Welcome to GOssTo the Gene Ontology Semantic Similarity Tool!");
-        System.out.print("GOssTo is a software system for ");
-        System.out.println("calculating semantic similarities between gene products in the Gene Ontology.");
-        System.out.print("GOssTo implements the Random Walk Contribution, improving the accuracy ");
-        System.out.print("of similarity measures.");
-
+        System.out.println("*******************************************************************************");
+        System.out.println("GOssTo -- THE GENE ONTOLOGY SEMANTIC SIMILARITY TOOL");
         System.out.println();
-        System.out.println("For Yang's et. al description of the method:");
+        System.out.println(" If you use it, please cite the following papers:");
         System.out.println();
-        System.out.println("Improving GO semantic similarity measures by exploring the ontology beneath the terms and modelling uncertainty");
+        System.out.println("H. Yang, T. Nepusz, A. Paccanaro");
+        System.out.println("Improving GO semantic similarity measures by exploring the ontology beneath");
+        System.out.println("the terms and modelling uncertainty");
         System.out.println("Bioinformatics, vol. 28, iss. 10, pp. 1383-1389, 2012.");
-
         System.out.println();
-        System.out.println("If you use GOssTo, please cite it.");
+        System.out.println("H. Caniza Vierci, A. E. Romero, S. Heron, H. Yang, A. Devoto, M. Frasca,");
+        System.out.println("G. Valentini, A. Paccanaro");
+        System.out.println("GOssTo: an extendable stand-alone and web tool for calculating semantic ");
+        System.out.println("similarities on the Gene Ontology");
+        System.out.println("Bioinformatics, to appear");
         System.out.println();
-        System.out.println("GOssTo: an extendable stand-alone and web tool for calculating semantic similarities on the Gene Ontology");
-        System.out.println("To appear");
-
-        System.out.println();
+        System.out.println("This is version 1.0");
         System.out.println("PaccanaroLab: http://www.paccanarolab.org");
-        System.out.println("Valentini Lab: http://homes.di.unimi.it/~valenti/index.html");
-        System.out.println("********************************************************************************************************************");
-        System.out.println("--------------------------------------------------------------------------------------------------------------------");
-        System.out.println("GOssTo  Copyright (C) 2012  Samuel Heron, Alfonso E. Romero");
-        System.out.println("This program comes with ABSOLUTELY NO WARRANTY; for details type `--getw' after the Jar execution statement.");
+        System.out.println();
+        System.out.println("-------------------------------------------------------------------------------");
+        System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
+        System.out.println("For details type `--getw' after the Jar execution statement.");
         System.out.println("This is free software, and you are welcome to redistribute it");
         System.out.println("under certain conditions; see the full GNU GPL licence for details.");
         System.out.println("The license can be found in full here: http://www.gnu.org/licenses/gpl.html");
-        System.out.println("--------------------------------------------------------------------------------------------------------------------");
-        System.out.println();
+        System.out.println("*******************************************************************************");
     }
-    
-    boolean requestMatrixStyle() {
-        System.out.println("Would you like to print the file in matrix style (y) or triplet style (n)");
+
+    int requestMatrixStyle() {
+        System.out.println("Would you like to print the file in matrix style (m),");
+        System.out.println("triplet style (t) or both (b)");
         System.out.print(">? ");
         String choice = userInput.next();
-        if (choice.toLowerCase().equals("y")) {
-            return true;
-        } else if (choice.toLowerCase().equals("n")) {
-            return false;
+        if (choice.toLowerCase().equals("m")) {
+            return ISM.MATRIX_STYLE;
+        } else if (choice.toLowerCase().equals("t")) {
+            return ISM.TRIPLET_STYLE;
+        } else if (choice.toLowerCase().equals("b")) {
+            return ISM.BOTH_FILES;
         } else {
             incorrect(choice);
         }
-        return false;        
+        return -1;
     }
 
     boolean requestUniProtIds() {

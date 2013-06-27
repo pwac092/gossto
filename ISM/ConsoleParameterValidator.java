@@ -47,7 +47,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
         Options paramOptions = new Options();
 
         paramOptions.addOption("help", false, "Shows this message");
-        paramOptions.addOption("version", false, "v0.1 Aug 2012");
+        paramOptions.addOption("version", false, "v1.0 Jun 2013");
         paramOptions.addOption("getw", false, "Show warranty disclaimer section of the GNU GPL license");
         paramOptions.addOption("logfile", false, "Enter 'shallow' or 'deep' for the level of logging you require");
         paramOptions.addOption("obopath", true, "Enter filepath for OBO file");
@@ -62,8 +62,8 @@ public class ConsoleParameterValidator extends ParameterValidator {
         paramOptions.addOption("hsmoutput", true, "Enter the name and location the HSM outputs will be stored at");
         paramOptions.addOption("ismoutput", true, "Enter the name and location the ISM outputs will be stored at");
         paramOptions.addOption("weightedJaccard", true, "Select whether to weight the Jaccard Index for genewise ISM with the information content");
-        paramOptions.addOption("useUniProtIds", true, "Select whether to use UniProtKB accession number instead of human-readable gene ids");
-        paramOptions.addOption("matrixStyle", true, "Select whether to print the file in matrix style or in triplet style");
+        paramOptions.addOption("useUniProtIds", true, "Select whether to use UniProtKB accession number instead of human-readable gene ids (has only effect in genewise calculations)");
+        paramOptions.addOption("matrixStyle", true, "Select whether to print the file in matrix style (m) in triplet style (t) or both files (b)");
 
         try {
             cmd = parser.parse(paramOptions, args);
@@ -71,6 +71,14 @@ public class ConsoleParameterValidator extends ParameterValidator {
             if (cmd.hasOption("help")) //prints list of parameter labels with description
             {
                 formatter.printHelp("GOssTo", paramOptions);
+                System.out.println("");
+                System.out.println("If you want to run an illustrative example, download the zip file 'GOssTo and example data'");
+                System.out.println("from www.paccanarolab.org/gossto, and then run:");
+                System.out.println("\t java -jar Gossto.jar -calculationdata termwise \\");
+                System.out.println("\t\t-calculationtype ism -evidencecodes EXP,IDA,IPI,IMP,IGI,IEP,TAS,IC \\");
+                System.out.println("\t\t-goapath gene_association.goa_yeast -obopath gene_ontology_ext.obo \\");
+                System.out.println("\t\t-hsm Resnik -hsmoutput demo_hsm_output -ismoutput demo_ism_output \\");
+                System.out.println("\t\t-ontology all -relations is_a,part_of -weightedJaccard true -terms all");
                 System.exit(-1);
             }
             if (cmd.hasOption("version")) //prints GOssTo version
@@ -80,7 +88,15 @@ public class ConsoleParameterValidator extends ParameterValidator {
             }
             if (cmd.hasOption("getw")) //Prints the GNU GPL warranty section
             {
-                System.out.println("15. Disclaimer of Warranty. \n THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. \n EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR \n OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND,  \n EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES \n OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK \n AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM \n PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.");
+                System.out.println("15. Disclaimer of Warranty.");
+                System.out.println(" THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE");
+                System.out.println(" LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR");
+                System.out.println(" OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND,");
+                System.out.println(" EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED");
+                System.out.println(" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE");
+                System.out.println(" ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.");
+                System.out.println(" SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY");
+                System.out.println(" SERVICING, REPAIR OR CORRECTION.");
                 System.exit(-1);
             }
             //this.log file parameter
@@ -268,10 +284,12 @@ public class ConsoleParameterValidator extends ParameterValidator {
             }
 
             if (cmd.hasOption("matrixStyle")) {
-                if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("true")) {
-                    this.matrixStyle = true;
-                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("false")) {
-                    this.matrixStyle = false;
+                if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("m")) {
+                    this.matrixStyle = ISM.MATRIX_STYLE;
+                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("t")) {
+                    this.matrixStyle = ISM.TRIPLET_STYLE;
+                } else if (cmd.getOptionValue("matrixStyle").toLowerCase().equals("b")) {
+                    this.matrixStyle = ISM.BOTH_FILES;
                 } else { //just in case something weird was written.
                     logger.logAndCloseWriter("############ ERROR: Invalid choice for matrixStyle option");
                     System.err.println("ERROR: Invalid choice for matrixStyle option");
