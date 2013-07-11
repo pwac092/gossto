@@ -460,7 +460,6 @@ public class TerminalInterface {
     }
 
     public void farewell() {
-
         System.out.println("#####Printing Complete#####");
         System.out.println();
         System.out.println("Thank you for using GOssTo.");
@@ -471,7 +470,6 @@ public class TerminalInterface {
         System.out.println();
         System.out.println("*******************************************************************************");
         System.out.println("GOssTo -- THE GENE ONTOLOGY SEMANTIC SIMILARITY TOOL");
-
         System.out.println();
         System.out.println(" If you use it, please cite the following papers:");
         System.out.println();
@@ -479,7 +477,6 @@ public class TerminalInterface {
         System.out.println("Improving GO semantic similarity measures by exploring the ontology beneath");
         System.out.println("the terms and modelling uncertainty");
         System.out.println("Bioinformatics, vol. 28, iss. 10, pp. 1383-1389, 2012.");
-
         System.out.println();
         System.out.println("H. Caniza Vierci, A. E. Romero, S. Heron, H. Yang, A. Devoto, M. Frasca,");
         System.out.println("G. Valentini, A. Paccanaro");
@@ -489,7 +486,6 @@ public class TerminalInterface {
         System.out.println();
         System.out.println("This is version 1.0");
         System.out.println("PaccanaroLab: http://www.paccanarolab.org");
-
         System.out.println();
         System.out.println("-------------------------------------------------------------------------------");
         System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
@@ -499,7 +495,7 @@ public class TerminalInterface {
         System.out.println("The license can be found in full here: http://www.gnu.org/licenses/gpl.html");
         System.out.println("*******************************************************************************");
     }
-    
+
     int requestMatrixStyle() {
         System.out.println("Would you like to print the file in matrix style (m),");
         System.out.println("triplet style (t) or both (b)");

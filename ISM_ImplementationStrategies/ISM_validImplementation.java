@@ -17,6 +17,7 @@ package ISM_ImplementationStrategies;
 import GOtree.Assignment;
 import GOtree.GOTerm;
 import Jama.Matrix;
+import Jama.SparseMatrix;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -173,7 +174,8 @@ public class ISM_validImplementation {
     private Matrix initialiseTransitionProbabilities() {
         //1. initialise transitionprobabilities
         //we use a sparse matrix, so we don't need to put zeroes anywhere.
-        Matrix P = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
+        //Matrix P = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
+        Matrix P = new SparseMatrix(this.getNumGoTerms(), this.getNumGoTerms());
 
         //0.1 check if the node is a leaf, if it is, put a 1 into it.
         for (GOTerm currentGoTerm : this.subGoTerms) {
@@ -274,7 +276,7 @@ public class ISM_validImplementation {
         Matrix P = this.initialiseTransitionProbabilities();
 
         logger.showMemoryUsage();
-        
+
         //2. initialise random walkers.
         //keep in mind that this makes sense because of the way the indexes were
         //loaded into this.goTermIndex. Otherwise, we would have to retrieve 
@@ -287,11 +289,15 @@ public class ISM_validImplementation {
         // walk!
         Matrix W_star = W.copy();
         double convergence;
+        //int i=0;
         do {
             W = W_star;
             W_star = P.times(W);
             convergence = W_star.minus(W).normF();
             this.logger.showTimedMessage("\t Convergence difference: " + (new Double(convergence)).toString());
+            //this.logger.showTimedMessage("\t Doing iteration i=" + i);
+            //  i++;
+            //}while (i<15);
         } while (convergence > this.epsilon);
 
         return W_star;
@@ -309,13 +315,13 @@ public class ISM_validImplementation {
         Matrix subHSM = this.HSM.getMatrix(this.leafIndices, this.leafIndices);
         this.logger.showTimedMessage("RWC * HSM");
 
-        this.RWC = this.RWC.times(subHSM);
+        this.RWC = this.RWC.timesIKJ(subHSM);
         this.logger.showTimedMessage("Submatrix (W)");
 
         Matrix subW = W.getMatrix(this.leafIndices, this.allIndices).copy();
         this.logger.showTimedMessage("RWC * SubMatrixW");
 
-        this.RWC = this.RWC.times(subW);
+        this.RWC = this.RWC.timesIKJ(subW);
         this.logger.showTimedMessage("RWC set!");
     }
 
@@ -325,7 +331,7 @@ public class ISM_validImplementation {
         Matrix A = this.getMatrixA();
         //1. multiply both matrices.
         this.logger.showTimedMessage("Getting matrix B");
-        Matrix B = W.getMatrix(this.leafIndices, this.allIndices).times(A);
+        Matrix B = W.getMatrix(this.leafIndices, this.allIndices).timesIKJ(A);
         //2. calculate the RWC
         //2.0 traverse all the products.
         //set the value for all eht rows for this column and this row
@@ -334,6 +340,7 @@ public class ISM_validImplementation {
         final int N = this.RWC.getRowDimension(), M = this.RWC.getColumnDimension();
 
         if (this.weightedJaccard) {
+            this.logger.showTimedMessage("Jaccard index, _with_ IC");
             for (int i = 0; i < N; i++) {
                 float column_i[] = B.getColumn(i);
                 for (int j = i; j < M; j++) {
@@ -343,10 +350,20 @@ public class ISM_validImplementation {
                 }
             }
         } else {
+            this.logger.showTimedMessage("Jaccard index, _without_ IC");
+            float sums[] = new float[N];
+            for (int i = 0; i < N; i++) {
+                float sum = 0.0f;
+                for (float val : B.getColumn(i)) {
+                    sum += val;
+                }
+                sums[i] = sum;
+            }
+
             for (int i = 0; i < N; i++) {
                 float column_i[] = B.getColumn(i);
                 for (int j = i; j < M; j++) {
-                    float jaccardIndex = this.getJaccardIndexWithoutIC(column_i, B.getColumn(j));
+                    float jaccardIndex = this.getJaccardIndexWithoutIC(column_i, B.getColumn(j), sums[i], sums[j]);
                     this.RWC.set(i, j, jaccardIndex);
                     this.RWC.set(j, i, jaccardIndex);
                 }
@@ -355,7 +372,7 @@ public class ISM_validImplementation {
         this.logger.showTimedMessage("RWC set!");
     }
 
-    private Matrix getMatrixA() {
+    private Matrix getMatrixA() throws IOException {
 
         Matrix A = new Matrix(this.getNumGoTerms(), this.annotations.sizeGenes());
         for (GOTerm currentGoTerm : this.subGoTerms) {
@@ -389,19 +406,20 @@ public class ISM_validImplementation {
                 }
             }
         }
+        this.logger.showMessage("Matrix A computed. % of sparseness = " + A.getSparsenessPercentage());
         return A;
     }
 
-    private float getJaccardIndexWithoutIC(final float[] distributionProductOne, final float[] distributionProductTwo) {
+    private float getJaccardIndexWithoutIC(final float[] distributionProductOne, final float[] distributionProductTwo, float sumProductOne, float sumProductTwo) {
         //0. gather data
         float combinedSum = 0.0f;
-        float sumProductOne = 0.0f, sumProductTwo = 0.0f;
+        //float sumProductOne = 0.0f, sumProductTwo = 0.0f;
 
         for (int i = 0; i < this.leafIndices.length; i++) {
             //compute data independently
             combinedSum += distributionProductOne[i] * distributionProductTwo[i];
-            sumProductOne += distributionProductOne[i];
-            sumProductTwo += distributionProductTwo[i];
+            //sumProductOne += distributionProductOne[i];
+            //sumProductTwo += distributionProductTwo[i];
         }
         //1. compute the jaccard index
         return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
