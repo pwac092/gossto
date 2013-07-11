@@ -78,7 +78,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
                 System.out.println("\t\t-calculationtype ism -evidencecodes EXP,IDA,IPI,IMP,IGI,IEP,TAS,IC \\");
                 System.out.println("\t\t-goapath gene_association.goa_yeast -obopath gene_ontology_ext.obo \\");
                 System.out.println("\t\t-hsm Resnik -hsmoutput demo_hsm_output -ismoutput demo_ism_output \\");
-                System.out.println("\t\t-ontology all -relations is_a,part_of -weightedJaccard true -terms all");
+                System.out.println("\t\t-ontology all -relations is_a,part_of -weightedJaccard false -terms all");
                 System.exit(-1);
             }
             if (cmd.hasOption("version")) //prints GOssTo version

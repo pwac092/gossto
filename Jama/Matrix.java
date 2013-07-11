@@ -307,6 +307,20 @@ public class Matrix implements Cloneable, java.io.Serializable {
         }
         return (double) num_sparse / (double) (n * m) * 100.0;
     }
+    
+    public SparseMatrix getSparseMatrix(int[] r, int[] c) {
+        SparseMatrix X = new SparseMatrix(r.length, c.length);
+        try {
+            for (int i = 0; i < r.length; i++) {
+                for (int j = 0; j < c.length; j++) {
+                    X.set(i, j, A[r[i]][c[j]]);
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("Submatrix indices");
+        }
+        return X;
+    }
 
     /**
      * Get a submatrix.

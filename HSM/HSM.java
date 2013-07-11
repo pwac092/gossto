@@ -327,7 +327,6 @@ public abstract class HSM {
     }
 
     private Map<Integer, Set<Integer>> computeDominancies(Matrix x) {
-        System.err.println("Computing dominancies");
         final int m = x.getRowDimension();
         final int n = x.getRowDimension();
 

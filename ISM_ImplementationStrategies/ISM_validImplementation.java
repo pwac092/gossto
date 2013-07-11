@@ -51,6 +51,7 @@ public class ISM_validImplementation {
     private Set<Integer> leafs; //just to cache the leafs.
     private int[] allIndices; //just to store them. We will definitely need them
     private int[] leafIndices; //again, we will definitely use them
+    private Map<Integer, Integer> gotermIdByIndex;
     private HashMap<String, Integer> proteinIndices; //to store the protein indices for genewise calculations
     private double maxNumberOfAnnotations; //an integer to store the maximnun number of annotations of any node in the tree
     /*ISM elements*/
@@ -73,8 +74,6 @@ public class ISM_validImplementation {
     private TinyLogger logger;
 
     public ISM_validImplementation(GOTerm[] ISM_currentGoTerms, Matrix HSM, String[] ISM_currentRelations, Assignment ISM_Annotations, boolean termwise, boolean wJaccard, TinyLogger logger) {
-
-
         //0. Utils
 
         //0.1 various caches for speedup
@@ -94,9 +93,11 @@ public class ISM_validImplementation {
 
         //0.5.0 fire up the cache for the indices and load it up
         this.goTermIndex = new HashMap<Integer, Integer>();
+        this.gotermIdByIndex = new HashMap<Integer, Integer>();
         //now we load all the indices for the goterms.
         for (int i = 0; i < this.getNumGoTerms(); i++) {
             this.goTermIndex.put(this.subGoTerms[i].getNumericId(), i);
+            this.gotermIdByIndex.put(i, this.subGoTerms[i].getNumericId());
         }
         //0.5.1 now that the goterms are set, we can load the indices.
         this.allIndices = this.getAllIndices();
@@ -331,7 +332,11 @@ public class ISM_validImplementation {
         Matrix A = this.getMatrixA();
         //1. multiply both matrices.
         this.logger.showTimedMessage("Getting matrix B");
-        Matrix B = W.getMatrix(this.leafIndices, this.allIndices).timesIKJ(A);
+        SparseMatrix W_ = W.getSparseMatrix(this.leafIndices, this.allIndices);
+        this.logger.showMessage("Matrix W_ computed. % of sparseness = " + W_.getSparsenessPercentage());
+        Matrix B = W_.times(A); // TODO: optimize this, A is always very sparse
+        this.logger.showMessage("Matrix B computed. % of sparseness = " + B.getSparsenessPercentage());
+
         //2. calculate the RWC
         //2.0 traverse all the products.
         //set the value for all eht rows for this column and this row
@@ -341,10 +346,19 @@ public class ISM_validImplementation {
 
         if (this.weightedJaccard) {
             this.logger.showTimedMessage("Jaccard index, _with_ IC");
+            // precomputing IC for each leaf
+
+            final float invMaxAnnot = 1.0f / (float) this.maxNumberOfAnnotations;
+            float IC[] = new float[this.leafIndices.length];
+            for (int i = 0; i < this.leafIndices.length; i++) {
+                //we need to fetch  the information content of the nodes if we use weighted jaccard.
+                IC[i] = (float) -Math.log(this.numAnnotations.get(this.gotermIdByIndex.get(this.leafIndices[i])) * invMaxAnnot);
+            }
+
             for (int i = 0; i < N; i++) {
                 float column_i[] = B.getColumn(i);
                 for (int j = i; j < M; j++) {
-                    float jaccardIndex = this.getJaccardIndexWithIC(column_i, B.getColumn(j));
+                    float jaccardIndex = this.getJaccardIndexWithIC(column_i, B.getColumn(j), IC);
                     this.RWC.set(i, j, jaccardIndex);
                     this.RWC.set(j, i, jaccardIndex);
                 }
@@ -425,21 +439,18 @@ public class ISM_validImplementation {
         return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
     }
 
-    private float getJaccardIndexWithIC(final float[] distributionProductOne, final float[] distributionProductTwo) {
+    private float getJaccardIndexWithIC(final float[] distributionProductOne, final float[] distributionProductTwo, final float[] IC) {
         //0. gather data
         float combinedSum = 0.0f;
         float sumProductOne = 0.0f, sumProductTwo = 0.0f;
 
-        final float invMaxAnnot = 1.0f / (float) this.maxNumberOfAnnotations;
         for (int i = 0; i < this.leafIndices.length; i++) {
 
             //we need to fetch  the information content of the nodes if we use weighted jaccard.
-            final double IC = -Math.log(this.numAnnotations.get(this.leafIndices[i]) * invMaxAnnot);
-
             //compute data independently
-            combinedSum += distributionProductOne[i] * distributionProductTwo[i] * IC;
-            sumProductOne += distributionProductOne[i] * IC;
-            sumProductTwo += distributionProductTwo[i] * IC;
+            combinedSum += distributionProductOne[i] * distributionProductTwo[i] * IC[i];
+            sumProductOne += distributionProductOne[i] * IC[i];
+            sumProductTwo += distributionProductTwo[i] * IC[i];
         }
         //1. compute the jaccard index
         return (combinedSum / (sumProductOne + sumProductTwo - combinedSum));
