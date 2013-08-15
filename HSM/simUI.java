@@ -16,83 +16,34 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import HSM.GraphSimilarities.GraphSimilarity;
+import HSM.GraphSimilarities.SimUISimilarity;
 import Jama.Matrix;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 import util.TinyLogger;
 
 /**
  *
  * @author Samuel Heron, Alfonso E. Romero
- * 
+ *
  */
 //Implements the simUI semantic similarity measure
 public class simUI extends HSM {
-
+    
     public simUI(GOTerm[] allTerms, String[] genes, String[][] goIds, GOTerm[][] axis, String[] targets, Assignment annotations, String[] relations, TinyLogger logw) {
         super(allTerms, genes, goIds, axis, targets, annotations, relations, logw);
-        isAGraphBasedMeasure = true;
+        isAGraphBasedMeasure = true;    
     }
 
     @Override
     public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
-        System.out.println("#####SimUI HSM#####");
-        final int N = numGOtermsPerOntology[ontology];
-        Matrix result = new Matrix(N, N);
-        final int NUM_GENES = this.genes.length;
-
-        HashSet<GOTerm> GeneGroups[] = new HashSet[NUM_GENES];
-        for (int g = 0; g < NUM_GENES; g++) {
-            GeneGroups[g] = new HashSet<GOTerm>();
-        }
-        //get all GOTerms and ancestors for each gene
-        logwriter.showMessage("Getting gene2go info for " + shortOntologyName[ontology]);
-
-        for (int g = 0; g < this.genes.length; g++) {
-            for (String go : this.goIdsByGene[g]) {
-                if (ontology == super.getOntologyFromGOTerm(go)) {
-                    GeneGroups[g].addAll(super.goTermFromID.get(go).getAncestors());
-                }
-            }
-        }
-
-        logwriter.log("Getting gene2go Completed ");
-        System.out.println("Calculating Semantic Similarity");
-        //calculate semantic similarity between each gene 
-        HashSet<GOTerm> union = new HashSet<GOTerm>();
-        for (int i = 0; i < GeneGroups.length; i++) {
-            if (GeneGroups[i].isEmpty() == false) {
-                for (int j = 0; j < GeneGroups.length; j++) {
-                    if (GeneGroups[j].isEmpty() == false) {
-                        int intersectionVal = 0;
-                        union.clear();
-                        for (GOTerm go : GeneGroups[i]) //get values that are unique to one or other set
-                        {
-                            if (GeneGroups[j].contains(go) == false) {
-                                intersectionVal++;
-                            }
-                        }
-                        for (GOTerm go : GeneGroups[j]) {
-                            if (GeneGroups[i].contains(go) == false) {
-                                intersectionVal++;
-                            }
-                        }
-                        union.addAll(GeneGroups[i]); //get union of the two sets
-                        union.addAll(GeneGroups[j]);
-                        float unionVal = union.size();
-                        float semSim = (float) intersectionVal / unionVal; //calculate similarity value
-                        result.set(i, j, semSim);
-                    }
-                }
-            }
-        }
-        logwriter.showMessage("Completed HSM for " + shortOntologyName[ontology]);
-        return result;
+        return super.calculateGraphGeneWiseSemanticSimilarity(ontology, new SimUISimilarity(annotations));
     }
 
     @Override
     public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

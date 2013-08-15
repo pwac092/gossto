@@ -35,7 +35,6 @@ import util.TinyLogger;
  * time.
  */
 public class ISM_validImplementation {
-
     /*
      * P = 0; //transition probabilities
      * P(c,c) = 1 if node c is a leaf 
@@ -45,6 +44,7 @@ public class ISM_validImplementation {
      */
     /*utils*/
     //number of GOterms in the adjacency matrix
+
     private GOTerm[] subGoTerms;  //this holds all the goterms with annotations
     private String[] relations; //this holds the relations
     private HashMap<Integer, Integer> goTermIndex; //correspondence between goterms and their indices in the matrix.
@@ -134,11 +134,13 @@ public class ISM_validImplementation {
 
         //0.8 RWC
         //Different sets have to be traversed
-        if (this.termwise) {
-            this.RWC = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
-        } else {
-            this.RWC = new Matrix(this.proteinIndices.size(), this.proteinIndices.size());
-        }
+        this.RWC = new Matrix(HSM.getRowDimension(), HSM.getColumnDimension());
+        /*
+         if (this.termwise) {
+         this.RWC = new Matrix(this.getNumGoTerms(), this.getNumGoTerms());
+         } else {
+         this.RWC = new Matrix(this.proteinIndices.size(), this.proteinIndices.size());
+         }*/
 
         //3.
         //just set the convergence limit.
@@ -388,7 +390,8 @@ public class ISM_validImplementation {
 
     private Matrix getMatrixA() throws IOException {
 
-        Matrix A = new Matrix(this.getNumGoTerms(), this.annotations.sizeGenes());
+        //Matrix A = new Matrix(this.getNumGoTerms(), this.annotations.sizeGenes());
+        Matrix A = new Matrix(this.getNumGoTerms(), this.RWC.getColumnDimension());
         for (GOTerm currentGoTerm : this.subGoTerms) {
             //0. check for NStar value > 0, since this indicates there
             //is an annotation 

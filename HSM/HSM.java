@@ -16,6 +16,7 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import HSM.GraphSimilarities.GraphSimilarity;
 import Jama.Matrix;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import util.TinyLogger;
 
 /**
  *
- * @author Samuel Heron
+ * @author Alfonso E. Romero
  */
 //This class is merely an interface for the HSM methods through which common functionality is shared
 public abstract class HSM {
@@ -54,7 +55,7 @@ public abstract class HSM {
     protected final int CELLULAR_COMPONENT = 2;
     protected final static String[] shortOntologyName = {"BP", "MF", "CC"};
     protected final static String[] longOntologyName = {"Biological Process", "Molecular Function", "Cellular Component"};
-    private String[] computedGenes;
+    protected String[] computedGenes;
     protected boolean isAGraphBasedMeasure;
 
     // Constructor for HSM genewise, takes a listing of all GO terms, a listing of all genes, a mapping 
@@ -240,7 +241,7 @@ public abstract class HSM {
 
         this.logwriter.showMessage("Extracting GO term ids associated to each gene... ");
         int all = 0, removed = 0;
-        
+
         for (String gene : this.annotations.getRowIdentifiers()) {
 
             Set<Integer> ids = new HashSet<Integer>();
@@ -264,8 +265,8 @@ public abstract class HSM {
                     ids.add(id);
                 }
             }
-            
-            all+= ids.size();
+
+            all += ids.size();
             removed += blacklisted.size();
 
             if (!ids.isEmpty()) {
@@ -283,9 +284,9 @@ public abstract class HSM {
                 goIdsPerGene.put(gene, arrayIds);
             }
         }
-        
-        double perc = (double)removed / (double) all * 100.0;
-        
+
+        double perc = (double) removed / (double) all * 100.0;
+
         this.logwriter.showMessage("Removed " + perc + "% of all associations because of dominancy");
 
         //filter out all the genes annotated to the desired ontology
@@ -297,7 +298,7 @@ public abstract class HSM {
 
         this.computedGenes = new String[NUM_GENES_ONTOLOGY];
         selectedGenes.toArray(this.computedGenes);
-        
+
         this.logwriter.showMessage("Computing genewise semantic similarity by maximum (" + NUM_GENES_ONTOLOGY + " genes)");
 
         Matrix result = new Matrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
@@ -363,13 +364,64 @@ public abstract class HSM {
         }
 
         /*
-        int k = 0;
-        for (int i = 0; i < m; ++i) {
-            if (dominates.get(i).size() > 10) {
-                ++k;
-                System.err.println("Row " + i + " dominates " + dominates.get(i).size());
-            }
-        } */
+         int k = 0;
+         for (int i = 0; i < m; ++i) {
+         if (dominates.get(i).size() > 10) {
+         ++k;
+         System.err.println("Row " + i + " dominates " + dominates.get(i).size());
+         }
+         } */
         return dominates;
+    }
+
+    protected Matrix calculateGraphGeneWiseSemanticSimilarity(int ontology, GraphSimilarity measure) throws IOException, OutOfMemoryError {
+        System.out.println("#####SimUI HSM#####");
+
+        // 1.- we get the set of GO terms for every gene
+        Map<String, Set<GOTerm>> goTermsPerGene = new HashMap<String, Set<GOTerm>>();
+        for (int g = 0; g < this.genes.length; g++) {
+            String gene = genes[g];
+            Set<GOTerm> added = new HashSet<GOTerm>();
+            for (String go : this.goIdsByGene[g]) {
+                if (ontology == getOntologyFromGOTerm(go)) {
+                    added.addAll(goTermFromID.get(go).getAncestors());
+                }
+            }
+
+            if (!added.isEmpty()) {
+                goTermsPerGene.put(gene, added);
+            }
+        }
+
+        // 2.- we fill the list of sorted gene names
+        ArrayList<String> selectedGenes = new ArrayList<String>(goTermsPerGene.keySet());
+        Collections.sort(selectedGenes);
+        final int NUM_GENES_ONTOLOGY = selectedGenes.size();
+        this.computedGenes = new String[NUM_GENES_ONTOLOGY];
+        selectedGenes.toArray(this.computedGenes);
+
+        // we set the maximum number of annotations in case it is needed
+        measure.setMaxAnnotations(this.maxAnnotationNumber[ontology]);
+
+        // 3.- for each pair of genes, we compute the similarity as the 
+        // Jaccard coefficient of the set of associated GO terms to the
+        // genes
+        Matrix result = new Matrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
+        for (int i = 0; i < NUM_GENES_ONTOLOGY; ++i) {
+            Set<GOTerm> terms_i = goTermsPerGene.get(computedGenes[i]);
+            for (int j = i + 1; j < NUM_GENES_ONTOLOGY; ++j) {
+                Set<GOTerm> terms_j = goTermsPerGene.get(computedGenes[j]);
+
+                float sim = measure.similarity(terms_i, terms_j);
+
+                result.set(i, j, sim);
+                result.set(j, i, sim);
+
+            }
+            result.set(i, i, 1.0f); // self-similarity is 1.0 for any gene
+        }
+
+        logwriter.showMessage("Completed HSM for " + shortOntologyName[ontology]);
+        return result;
     }
 }

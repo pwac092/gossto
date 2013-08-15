@@ -432,12 +432,12 @@ public class IoValidation {
                 } else if (geneIDs != null) {
                     int genesWritten = 0;
 
-                    for (String term : geneIDs) {
+                    for (String gene : geneIDs) {
                         if (genesWritten > 0) {
                             out.write("\t");
                         }
-                        out.write(term);
-                        temp[ind] = term;
+                        out.write(gene);
+                        temp[ind] = gene;
                         ind++;
                         ++genesWritten;
                     }

@@ -16,9 +16,9 @@ package HSM;
 
 import GOtree.Assignment;
 import GOtree.GOTerm;
+import HSM.GraphSimilarities.SimGICSimilarity;
 import Jama.Matrix;
 import java.io.IOException;
-import java.util.HashSet;
 import util.TinyLogger;
 
 /**
@@ -34,90 +34,13 @@ public class simGIC extends HSM {
         isAGraphBasedMeasure = true;
     }
 
-    private double getMaxAnnotations() {
-        double maxAnnoNo = 0;
-        for (String term : annotations.getColumnIdentifiers()) {
-            if (annotations.countNumberOfGenesForGOTerm(term) > maxAnnoNo) //if a node has more, then make that the most
-            {
-                maxAnnoNo = (double) annotations.countNumberOfGenesForGOTerm(term);
-            }
-        }
-        return maxAnnoNo;
+    @Override
+    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
+        return super.calculateGraphGeneWiseSemanticSimilarity(ontology, new SimGICSimilarity(annotations));
     }
 
     @Override
     public Matrix calculateTermWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Matrix calculateGeneWiseSemanticSimilarity(int ontology) throws IOException, OutOfMemoryError {
-        System.out.println("#####SimGIC HSM#####");
-        final int N = numGOtermsPerOntology[ontology];
-        Matrix result = new Matrix(N, N);
-        final int NUM_GENES = this.genes.length;
-
-        // GeneGoups for any gene has all the ancestors of the GO terms annotated
-        // to that gene
-        HashSet<GOTerm> GeneGroups[] = new HashSet[NUM_GENES];
-        for (int g = 0; g < NUM_GENES; g++) {
-            GeneGroups[g] = new HashSet<GOTerm>();
-        }
-        //get all GOTerms and ancestors for each gene
-        logwriter.showMessage("Getting gene2go info for " + shortOntologyName[ontology]);
-
-        for (int g = 0; g < this.genes.length; g++) {
-            for (String go : this.goIdsByGene[g]) {
-                if (ontology == super.getOntologyFromGOTerm(go)) {
-                    GeneGroups[g].addAll(super.goTermFromID.get(go).getAncestors());
-                }
-            }
-        }
-
-        logwriter.log("Getting gene2go Completed ");
-        System.out.println("Calculating Semantic Similarity");
-        //calculate semantic similarity between each gene
-        double maxAnno = getMaxAnnotations();
-
-        for (int i = 0; i < NUM_GENES - 1; i++) {
-            if (!GeneGroups[i].isEmpty()) {
-                for (int j = i; j < NUM_GENES; j++) {
-                    if (!GeneGroups[j].isEmpty()) {
-                        float intersectionVal = 0.0f;
-
-                        for (GOTerm go : GeneGroups[i])//get values that are unique to one or other set
-                        {
-                            if (!GeneGroups[j].contains(go)) {
-                                double ICtemp = this.annotations.countNumberOfGenesForGOTerm(go.getGOid());
-                                intersectionVal += -Math.log(ICtemp / maxAnno);
-                            }
-                        }
-                        for (GOTerm go : GeneGroups[j]) {
-                            if (!GeneGroups[i].contains(go)) {
-                                double ICtemp = this.annotations.countNumberOfGenesForGOTerm(go.getGOid());
-                                intersectionVal += -Math.log(ICtemp / maxAnno);
-                            }
-                        }
-                        HashSet<GOTerm> union = new HashSet<GOTerm>();
-                        float unionVal = 0.0f;
-                        union.addAll(GeneGroups[i]); //get union of the two sets
-                        union.addAll(GeneGroups[j]);
-                        for (GOTerm go : union) {
-                            //get IC of each term in the intersection
-                            double ICtemp = this.annotations.countNumberOfGenesForGOTerm(go.getGOid());
-                            unionVal += -Math.log(ICtemp / maxAnno);
-                        }
-                        float semSim = intersectionVal / unionVal; //calculate similarity value
-                        result.set(i, j, semSim);
-                        result.set(j, i, semSim);
-                    }
-                }
-            }
-        }
-
-        logwriter.log("Completed HSM for " + shortOntologyName[ontology]);
-        System.out.println("Completed simGIC for Ontology : Biological Process" + longOntologyName[ontology]);
-
-        return result;
     }
 }
