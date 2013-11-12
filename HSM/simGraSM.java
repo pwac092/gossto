@@ -19,20 +19,58 @@ import GOtree.GOTerm;
 import Jama.Matrix;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import util.TinyLogger;
-
 /**
  *
- * @author Samuel Heron
+ * @author Alfonso E. Romero
  */
+
+class TermWithIC implements Comparable<TermWithIC> {
+
+    public GOTerm term;
+    public float IC;
+
+    public TermWithIC(GOTerm term, float IC) {
+        this.term = term;
+        this.IC = IC;
+    }
+
+    @Override
+    public int compareTo(TermWithIC t) {
+        if (this.IC < t.IC) {
+            return -1;
+        } else if (this.IC > t.IC) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+
 //Implements the simGraSM semantic similarity measure
 public class simGraSM extends HSM {
 
+    /**
+     * information content cache
+     */
+    Map<GOTerm, Float> icCache;
+
+    /**
+     * Caches the number of paths between two GO terms, using their goNumericId
+     * (and forcing the first one to be less or equal than the second)
+     */
+    Map<Integer, Map<Integer, Integer>> numPathsCache;
+
     public simGraSM(GOTerm[] allTerms, String[] genes, String[][] goIds, GOTerm[][] axis, String[] targets, Assignment annotations, String[] relations, TinyLogger logw) {
         super(allTerms, genes, goIds, axis, targets, annotations, relations, logw);
+        icCache = new HashMap<GOTerm, Float>();
+        numPathsCache = new HashMap<Integer, Map<Integer, Integer>>();
     }
 
     //Returns the common ancestors of the GO terms 'target1' & 'target2'
@@ -42,114 +80,129 @@ public class simGraSM extends HSM {
         return CA;
     }
 
-    //Finds the disjunctive common ancestors for the two terms 'target1' & 'target2' in the ontology specified by 'dag'
-    private float disjunctiveCommonAncestors(GOTerm target1, GOTerm target2, int dag) {
-        HashSet<GOTerm> DCA = new HashSet<GOTerm>(); //Disjunctive common ancestors
-        HashSet<GOTerm> CA = commonAncestors(target1, target2); //Common ancestors
-        HashSet<GOTerm> DAunion = new HashSet<GOTerm>(disjunctiveAncestors(target1)); //Union of disjunctive ancestors
-        DAunion.addAll(disjunctiveAncestors(target2));
-
-        //get DCA's
-        // Common ancestors - DAunion
-        CA.removeAll(DAunion);
-        List<GOTerm> CAA = new ArrayList<GOTerm>(CA);
-        double ic[] = new double[CAA.size()];
-        for (int i = 0; i < CAA.size(); ++i) {
-            ic[i] = annotations.countNumberOfGenesForGOTerm(CAA.get(i).getGOid()) / this.maxAnnotationNumber[dag];
-        }
-
-        for (int i = 0; i < CAA.size() - 1; ++i) {
-            for (int j = i + 1; j < CAA.size(); ++j) {
-                if (ic[i] <= ic[j]) {
-                    DCA.add(CAA.get(i));
-                    DCA.add(CAA.get(j));
-                }
-            }
-        }
-
-//get similarity value
-        if (DCA.isEmpty()) //e.g root & root, no DA's, only CA = root etc.
-        {
-            return 0.0f;
-        } else {
-            int counter = 0; //counts number of disjunctive common ancestors
-            float semSimVal = 0.0f;
-            for (GOTerm dca : DCA) {
-                semSimVal += -Math.log(annotations.countNumberOfGenesForGOTerm(dca.getGOid()) / this.maxAnnotationNumber[dag]); //Entropy value
-                counter++;
-            }
-            semSimVal = semSimVal / counter;
-            return semSimVal;
-        }
-    }
-//Returns the disjunctive ancestors of a GO term; 'target'
-
-    private HashSet<GOTerm> disjunctiveAncestors(GOTerm target) {
-        HashSet<GOTerm> DA = new HashSet<GOTerm>(); //Disjunctive ancestors
-        Set<GOTerm> ancestors = target.getAncestors();
-        GOTerm[] ancs = ancestors.toArray(new GOTerm[0]);
-        GOTerm a1, a2;
-        for (int i = 0; i < ancs.length; i++) //For each ancestor
-        {
-            a1 = ancs[i];
-            boolean conditionsMet1 = false;
-            boolean conditionsMet2 = false;
-            for (int j = i; j < ancs.length; j++) //Compare it against each other ancestor. No need to repeat results so j starts at i
-            {
-                a2 = ancs[j];
-                for (HashSet<GOTerm> path : getPaths(a1, target)) //Fetches the paths between the ancestor and the target GO term
-                {
-                    if (path.contains(a2) == false) //If there is a path that doesn't contain the other ancestor then the first condition is met
-                    {
-                        conditionsMet1 = true;
-                        break;
-                    }
-                }
-                for (HashSet<GOTerm> path : getPaths(a2, target)) //Fetches the paths between the ancestor and the target GO term
-                {
-                    if (path.contains(a1) == false) //If there is a path that doesn't contain the other ancestor then the second condition is met
-                    {
-                        conditionsMet2 = true;
-                        break;
-                    }
-                }
-                if (conditionsMet1 == true && conditionsMet2 == true) //If both conditions are met then they are disjunctive ancestors
-                {
-                    DA.add(a1);
-                    DA.add(a2);
-                }
-            }
-        }
-        return DA;
-    }
-
     //Recursive method to find paths from a given GO term 'target' to another 'ancestor'. 'path' is the current path, 'allPaths' are all found paths between the terms
-    private HashSet<HashSet<GOTerm>> pathFinder(GOTerm ancestor, GOTerm target, HashSet<GOTerm> path, HashSet<HashSet<GOTerm>> allPaths) {
+    private void pathFinder(GOTerm ancestor, GOTerm currentNode, Set<GOTerm> path, Set<Set<GOTerm>> allPaths) {
         for (String rel : this.relations) {
-            for (GOTerm parent : target.getParentsForRelation(rel)) {
-                if (target.getParentsForRelation(rel).contains(ancestor) == true) //If a path is found from target to ancestor, add it to the path list
-                {
-                    allPaths.add(path);
-                    return allPaths;
-                } else if (target.isRoot(rel) == true) //If the current node is the root of an ontology, a path has not been found
-                {
-                    return allPaths;
-                } else //Otherwise carry on looking
-                {
-                    path.add(parent);
-                    pathFinder(ancestor, parent, path, allPaths);
-                }
+            Set<GOTerm> parents = new HashSet<GOTerm>(currentNode.getParentsForRelation(rel));
+            if (parents.contains(ancestor)) //If a path is found from target to ancestor, add it to the path list
+            {
+                allPaths.add(path);
+                return;
+            } else if (currentNode.isRoot(rel)) //If the current node is the root of an ontology, a path has not been found
+            {
+                return;
+            }
+            for (GOTerm parent : parents) {
+                Set<GOTerm> myPath = new HashSet<GOTerm>(path);
+                myPath.add(parent);
+                pathFinder(ancestor, parent, myPath, allPaths);
             }
         }
-        return allPaths; //Return the paths found
     }
 
-    //Returns the paths within the ontology between a given term 'target' and its ancestor; 'ancestor'
-    private HashSet<HashSet<GOTerm>> getPaths(GOTerm ancestor, GOTerm target) {
-        HashSet<HashSet<GOTerm>> resultantPaths = new HashSet<HashSet<GOTerm>>();
-        HashSet<GOTerm> path = new HashSet<GOTerm>();
-        resultantPaths = pathFinder(ancestor, target, path, resultantPaths);
-        return resultantPaths;
+    private int getNumPathsTermAncestor(GOTerm term, GOTerm ancestor) {
+        Set<GOTerm> path = new HashSet<GOTerm>();
+        Set<Set<GOTerm>> allPaths = new HashSet<Set<GOTerm>>();
+        pathFinder(ancestor, term, path, allPaths);
+        return allPaths.size();
+    }
+
+    private int getNumPaths(GOTerm _t1, GOTerm _t2) {
+        int t1 = Math.min(_t1.getNumericId(), _t2.getNumericId());
+        int t2 = Math.max(_t1.getNumericId(), _t2.getNumericId());
+
+        if (!numPathsCache.containsKey(t1) || !numPathsCache.get(t1).containsKey(t2)) {
+            int numPaths;
+
+            if (_t1.getAncestors().contains(_t2)) {
+                // _t2 is an ancestor of _t1 (base)
+                numPaths = getNumPathsTermAncestor(_t1, _t2);
+
+            } else if (_t2.getAncestors().contains(_t1)) {
+                // _t1 is an ancestor of _t2 (base)
+                numPaths = getNumPathsTermAncestor(_t2, _t1);
+            } else {
+                // there is no path from t1 to t2 or vice versa
+                numPaths = 0;
+            }
+
+            if (!numPathsCache.containsKey(t1)) {
+                numPathsCache.put(t1, new HashMap<Integer, Integer>());
+            }
+            numPathsCache.get(t1).put(t2, numPaths);
+            return numPaths;
+        } else {
+            return numPathsCache.get(t1).get(t2);
+        }
+    }
+
+    private boolean DisjAnc(GOTerm c, GOTerm a1, GOTerm a2) {
+        int nPaths = getNumPaths(a1, a2);
+        int nPaths1 = getNumPaths(a1, c);
+        int nPaths2 = getNumPaths(a2, c);
+        return nPaths1 >= nPaths + nPaths2;
+    }
+
+    private Map<GOTerm, Float> computeIC(Set<GOTerm> CA, double numAnnotationDAG) {
+        /**
+         * Computes the information content of a set of nodes, returning it in a
+         * map. Computed entries are cached for future usages.
+         */
+        Map<GOTerm, Float> informationContent = new HashMap<GOTerm, Float>();
+        float invNumAnnotationDAG = 1.0f / (float) numAnnotationDAG;
+        for (GOTerm term : CA) {
+            if (this.icCache.containsKey(term)) {
+                informationContent.put(term, this.icCache.get(term));
+            } else {
+                float ic = annotations.countNumberOfGenesForGOTerm(term.getGOid()) * invNumAnnotationDAG;
+                informationContent.put(term, ic);
+                this.icCache.put(term, ic);
+            }
+        }
+        return informationContent;
+    }
+
+    private List<GOTerm> sortByDescIC(Map<GOTerm, Float> values) {
+        List<TermWithIC> l = new ArrayList<TermWithIC>();
+        for (Map.Entry<GOTerm, Float> e : values.entrySet()) {
+            l.add(new TermWithIC(e.getKey(), e.getValue()));
+        }
+        Collections.sort(l, Collections.reverseOrder());
+        List<GOTerm> sortedTerms = new ArrayList<GOTerm>();
+        for (TermWithIC t : l) {
+            sortedTerms.add(t.term);
+        }
+        return sortedTerms;
+    }
+
+    //Finds the disjunctive common ancestors for the two terms 'target1' & 'target2' in the ontology specified by 'dag'
+    private float shareGraSM(GOTerm c1, GOTerm c2, int dag) {
+        //Common ancestors
+        Set<GOTerm> Anc = commonAncestors(c1, c2);
+        Set<GOTerm> CommonDisjAnc = new HashSet<GOTerm>();
+        Map<GOTerm, Float> IC = computeIC(Anc, this.maxAnnotationNumber[dag]);
+        List<GOTerm> ancestorsSortedByICDesc = this.sortByDescIC(IC);
+
+        for (GOTerm a : ancestorsSortedByICDesc) {
+            boolean isDisj = true;
+
+            for (GOTerm cda : CommonDisjAnc) {
+                isDisj = isDisj && (DisjAnc(c1, a, cda) || DisjAnc(c2, a, cda));
+                if (!isDisj) {
+                    break;
+                }
+            }
+
+            if (isDisj) {
+                CommonDisjAnc.add(a);
+            }
+        }
+
+        float shared = 0.0f;
+        for (GOTerm cda : IC.keySet()) {
+            shared += IC.get(cda);
+        }
+        return shared / (float) CommonDisjAnc.size();
     }
 
     @Override
@@ -165,7 +218,7 @@ public class simGraSM extends HSM {
 
         for (int i = 0; i < N - 1; i++) {
             for (int j = i; j < N; j++) { //Semantic similarity calculated based upon disjunctive common ancestors
-                float val = disjunctiveCommonAncestors(this.matrixAxis[ontology][i], this.matrixAxis[ontology][j], ontology);
+                float val = shareGraSM(this.matrixAxis[ontology][i], this.matrixAxis[ontology][j], ontology);
                 result.set(i, j, val);
                 result.set(j, i, val);
             }
@@ -173,4 +226,5 @@ public class simGraSM extends HSM {
         logwriter.showMessage("Completed HSM for " + shortOntologyName[ontology]);
         return result;
     }
+
 }
