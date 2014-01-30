@@ -375,7 +375,6 @@ public abstract class HSM {
     }
 
     protected Matrix calculateGraphGeneWiseSemanticSimilarity(int ontology, GraphSimilarity measure) throws IOException, OutOfMemoryError {
-        System.out.println("#####SimUI HSM#####");
 
         // 1.- we get the set of GO terms for every gene
         Map<String, Set<GOTerm>> goTermsPerGene = new HashMap<String, Set<GOTerm>>();
