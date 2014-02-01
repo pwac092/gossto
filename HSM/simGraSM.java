@@ -26,10 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import util.TinyLogger;
-/**
- *
- * @author Alfonso E. Romero
- */
 
 class TermWithIC implements Comparable<TermWithIC> {
 
@@ -53,6 +49,10 @@ class TermWithIC implements Comparable<TermWithIC> {
     }
 }
 
+/**
+ *
+ * @author Alfonso E. Romero
+ */
 //Implements the simGraSM semantic similarity measure
 public class simGraSM extends HSM {
 

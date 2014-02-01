@@ -46,12 +46,13 @@ public class HSMInterfacer {
     private final Set<GOTerm> targets;
     private final GOTerm[][] matrixAxis;
     private final String[] targetGenes;
-    
+    private Matrix originalMatrix;
+
     /**
      * Constructor: Instantiates the log file variable if a log file is to be
      * written
      */
-    public HSMInterfacer(TinyLogger logw, Set<GOTerm> targets, GOTerm[][] matrixAxis, String [] targetGenes) {
+    public HSMInterfacer(TinyLogger logw, Set<GOTerm> targets, GOTerm[][] matrixAxis, String[] targetGenes) {
         this.logwriter = logw;
         this.targets = targets;
         this.matrixAxis = matrixAxis;
@@ -107,15 +108,23 @@ public class HSMInterfacer {
         this.chosenHSM = hsmInstance;
     }
 
+    public Matrix getOriginalCachedMatrix() {
+        return this.originalMatrix;
+    }
+
     public Matrix returnGeneWiseResults(int matrix) throws IOException {
         if (chosenHSM.getNumGOTermsPerOntology(matrix) == 0) {
             // this case might happen if the organism has no annotation in that ontology
             return null;
         }
 
+        this.originalMatrix = this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix);
+
         if (this.targetGenes == null || this.targetGenes.length == 0) {
-            return this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix);
+
+            return this.originalMatrix;
         } else {
+            System.err.println("ITIA ITIA ");
             return returnTrimmedMatrixForGenes(this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix));
         }
     }
@@ -126,9 +135,11 @@ public class HSMInterfacer {
             // this case might happen if the organism has no annotation in that ontology
             return null;
         }
+        
+        this.originalMatrix = chosenHSM.calculateTermWiseSemanticSimilarity(matrix);
 
         if (this.targets == null || this.targets.isEmpty()) {
-            return chosenHSM.calculateTermWiseSemanticSimilarity(matrix);
+            return this.originalMatrix;
         } else {
             return returnTrimmedMatrix(this.chosenHSM.calculateTermWiseSemanticSimilarity(matrix), matrix);
         }
@@ -139,11 +150,11 @@ public class HSMInterfacer {
         trimmedMatrix = null;
 
         int size = 0, rowInd = 0, colInd = 0;
-        
+
         Set<String> selGenez = new HashSet<String>();
-        selGenez.addAll(Arrays.asList(this.targetGenes));       
+        selGenez.addAll(Arrays.asList(this.targetGenes));
         String[] allGenes = this.chosenHSM.getSubSetGenes();
-        
+
         for (int i = 0; i < in.getRowDimension(); i++) {
             if (selGenez.contains(allGenes[i])) {
                 ++size;

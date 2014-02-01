@@ -1,16 +1,16 @@
 /*This file is part of GOssTo.
-GOssTo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+ GOssTo is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-GOssTo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ GOssTo is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU General Public License
+ along with GOssTo.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ISM;
 
@@ -89,12 +89,13 @@ public class ISM {
      */
     private boolean weightedJaccard;
     /**
-     * Flag that tells us if the printing should be done in matrix
-     * style (true), or in triplet style (false)
+     * Flag that tells us if the printing should be done in matrix style (true),
+     * or in triplet style (false)
      */
     private int matrixStyle;
-    /** Tells us if we are using UniProtKB accesion numbers (true) or
-     * gene names to identify proteins
+    /**
+     * Tells us if we are using UniProtKB accesion numbers (true) or gene names
+     * to identify proteins
      */
     private boolean useUniProtIds;
     /**
@@ -250,11 +251,11 @@ public class ISM {
 
 
             /*
-            if (this.goIDs.length != goIDsAsGOTerm.size()) {
-            logger.logAndCloseWriter("############ ERROR: Invalid GOTerms found");
-            System.err.println("ERROR: One or more goterm IDs entered do not exist");
-            System.exit(-1);
-            }*/
+             if (this.goIDs.length != goIDsAsGOTerm.size()) {
+             logger.logAndCloseWriter("############ ERROR: Invalid GOTerms found");
+             System.err.println("ERROR: One or more goterm IDs entered do not exist");
+             System.exit(-1);
+             }*/
         }
 
         logger.log("Terms validated");
@@ -271,18 +272,14 @@ public class ISM {
             //#####Proper Running of Program#####
             ISM ism = new ISM();
 
-
             //String selectedEVCodes = "EXP,IDA,IPI,IMP,IGI,IEP,ISS,ISO,ISA,ISM,IGC,IBA,IBD,IKR,IRD,RCA,TAS,NAS";
-
-
             /* String argz[] = {"-obopath", "current.obo", "-goapath",
-            "gene_association.goa_human", "-relations", "is_a,part_of",
-            "-evidencecodes", selectedEVCodes,
-            "-hsm", "Resnik", "-ontology", "all",
-            "-calculationtype", "ism", "-calculationdata", "genewise",
-            "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
-            "all", "-weightedJaccard", "false"};*/
-
+             "gene_association.goa_human", "-relations", "is_a,part_of",
+             "-evidencecodes", selectedEVCodes,
+             "-hsm", "Resnik", "-ontology", "all",
+             "-calculationtype", "ism", "-calculationdata", "genewise",
+             "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
+             "all", "-weightedJaccard", "false"};*/
             // 1.- the parameters are validated
             ism.validateParameters(args);
 
@@ -324,9 +321,7 @@ public class ISM {
         //adjacencies[0] = gti.getBPAdjacencyMatrix(); //fetch adjacency matrices
         //adjacencies[1] = gti.getMFAdjacencyMatrix();
         //adjacencies[2] = gti.getCCAdjacencyMatrix();
-
         // 2.- HSM computation       
-
         // 2.1.- Builds an HSM interfacer (to abstract the different HSMs)
         Object[] params = generateParameters(gti, matrixAxis, goIDsAsGOTerm, validator);
         HSMInterfacer hsmi = buildsHSMInterfacer(params, new HashSet<GOTerm>(goIDsAsGOTerm), matrixAxis);
@@ -353,7 +348,6 @@ public class ISM {
                     genesRows = hsmi.getComputedGenes();
                 }
             }
-
             logger.log("HSM calculated");
             logger.showMemoryUsage();
 
@@ -369,6 +363,7 @@ public class ISM {
 
             // (c) if we are to compute an ISM...
             if (this.isIsmToBeComputed) {
+                hsmResults = hsmi.getOriginalCachedMatrix();
                 // (d) we compute it
 
                 ISMInterfacer ism = new ISMInterfacer();

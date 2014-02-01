@@ -56,7 +56,6 @@ public class ISMInterfacer {
         if (HSM == null) {
             return null;
         } else {
-
             ISM_validImplementation ism = new ISM_validImplementation(matrixAxis[matrix], HSM, GO_relations, annotations, false, weightedJaccard, logger);
             Matrix result = ism.computeISM();
 
