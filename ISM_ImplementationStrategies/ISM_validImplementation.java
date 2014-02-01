@@ -45,33 +45,33 @@ public class ISM_validImplementation {
     /*utils*/
     //number of GOterms in the adjacency matrix
 
-    private GOTerm[] subGoTerms;  //this holds all the goterms with annotations
-    private String[] relations; //this holds the relations
-    private HashMap<Integer, Integer> goTermIndex; //correspondence between goterms and their indices in the matrix.
-    private Set<Integer> leafs; //just to cache the leafs.
-    private int[] allIndices; //just to store them. We will definitely need them
-    private int[] leafIndices; //again, we will definitely use them
-    private Map<Integer, Integer> gotermIdByIndex;
+    private final GOTerm[] subGoTerms;  //this holds all the goterms with annotations
+    private final String[] relations; //this holds the relations
+    private final HashMap<Integer, Integer> goTermIndex; //correspondence between goterms and their indices in the matrix.
+    private final Set<Integer> leafs; //just to cache the leafs.
+    private final int[] allIndices; //just to store them. We will definitely need them
+    private final int[] leafIndices; //again, we will definitely use them
+    private final Map<Integer, Integer> gotermIdByIndex;
     private HashMap<String, Integer> proteinIndices; //to store the protein indices for genewise calculations
-    private double maxNumberOfAnnotations; //an integer to store the maximnun number of annotations of any node in the tree
+    private final double maxNumberOfAnnotations; //an integer to store the maximnun number of annotations of any node in the tree
     /*ISM elements*/
     private Matrix RWC;
-    private double epsilon;
+    private final double epsilon;
     /*HSM*/
-    private Matrix HSM;
+    private final Matrix HSM;
     /*Annotations*/
-    private Assignment annotations; //the actual annotations. 
-    private HashMap<Integer, Integer> numAnnotations; //just a cache for regular annotations
-    private HashMap<Integer, Integer> numAnnotationsStar; //just a cache for Star (i.e not in children) values
+    private final Assignment annotations; //the actual annotations. 
+    private final HashMap<Integer, Integer> numAnnotations; //just a cache for regular annotations
+    private final HashMap<Integer, Integer> numAnnotationsStar; //just a cache for Star (i.e not in children) values
     /*We will produce both genewise and termwise from this class. 
      * this will reduce the already massive code footprint.
      */
-    private boolean termwise;
-    private boolean weightedJaccard;
+    private final boolean termwise;
+    private final boolean weightedJaccard;
     /**
      * Tells whether the HSM is a graph based measure or not
      */
-    private TinyLogger logger;
+    private final TinyLogger logger;
 
     public ISM_validImplementation(GOTerm[] ISM_currentGoTerms, Matrix HSM, String[] ISM_currentRelations, Assignment ISM_Annotations, boolean termwise, boolean wJaccard, TinyLogger logger) {
         //0. Utils

@@ -124,7 +124,6 @@ public class HSMInterfacer {
 
             return this.originalMatrix;
         } else {
-            System.err.println("ITIA ITIA ");
             return returnTrimmedMatrixForGenes(this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix));
         }
     }

@@ -375,7 +375,7 @@ public class ISM {
                     ismResults = ism.getISMs(matrixAxis, hsmResults, gti.getResults(), goIDsAsGOTerm, chosenRelations, dagChoice, ontology, logger);
                 } else {
                     // compute ISM gene-wise
-                    ismResults = ism.getGeneISMs(matrixAxis, hsmResults, gti.getResults(), goIDsAsGOTerm, chosenRelations, dagChoice, ontology, logger, this.weightedJaccard);
+                    ismResults = ism.getGeneISMs(matrixAxis, hsmResults, gti.getResults(), chosenRelations, dagChoice, ontology, logger, this.weightedJaccard, this.geneIDs, hsmi.getComputedGenes());
                 }
 
                 // and we print the results of the HSM to a file...            

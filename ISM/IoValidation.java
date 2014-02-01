@@ -414,6 +414,14 @@ public class IoValidation {
                 //put together the top axis
                 String[] temp = new String[matrix.getRowDimension()];
                 logger.showMessage("Row dimension of the matrix: " + matrix.getRowDimension());
+                
+                if (matrix.getRowDimension() == 1)
+                {
+                    logger.showMessage("  ERROR: the specified user restrictions leaves a 1x1 matrix,");
+                    logger.showMessage("  which will not be printed.");
+                    return;                
+                }
+                
                 int ind = 0;
                 if (targetGoIDs != null && !targetGoIDs.isEmpty()) {
                     int termsWritten = 0;
@@ -462,8 +470,6 @@ public class IoValidation {
                 //printing the matrices value by value
                 final int n = matrix.getRowDimension();
                 final int m = matrix.getColumnDimension();
-
-                logger.showMessage("Printing contents: " + n + " " + m);
 
                 for (int i = 0; i < n; i++) {
                     out.write(temp[i]);
