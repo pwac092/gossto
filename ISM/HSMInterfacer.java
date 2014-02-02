@@ -119,12 +119,11 @@ public class HSMInterfacer {
         }
 
         this.originalMatrix = this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix);
-
         if (this.targetGenes == null || this.targetGenes.length == 0) {
 
             return this.originalMatrix;
         } else {
-            return returnTrimmedMatrixForGenes(this.chosenHSM.calculateGeneWiseSemanticSimilarity(matrix));
+            return returnTrimmedMatrixForGenes(this.originalMatrix);
         }
     }
 
@@ -140,7 +139,7 @@ public class HSMInterfacer {
         if (this.targets == null || this.targets.isEmpty()) {
             return this.originalMatrix;
         } else {
-            return returnTrimmedMatrix(this.chosenHSM.calculateTermWiseSemanticSimilarity(matrix), matrix);
+            return returnTrimmedMatrix(this.originalMatrix, matrix);
         }
     }
 

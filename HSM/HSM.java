@@ -187,8 +187,8 @@ public abstract class HSM {
         this.genes = targetGenes;
         this.goIdsByGene = newGene2GO;
         boolean nulltest = false;
-        for (int i = 0; i < newGene2GO.length; i++) {
-            if (newGene2GO[i] == null) {
+        for (String[] newGene2GO1 : newGene2GO) {
+            if (newGene2GO1 == null) {
                 nulltest = true;
                 break;
             }
@@ -211,7 +211,7 @@ public abstract class HSM {
      * "isAGraphBasedMeasure" should change its value to true for those cases in
      * which we are dealing with such a measure (e.g. simGIC).
      *
-     * @returns true if the measure is a graph-based one, false otherwise
+     * @return true if the measure is a graph-based one, false otherwise
      */
     public boolean isAGraphBasedMeasure() {
         return isAGraphBasedMeasure;
@@ -304,7 +304,6 @@ public abstract class HSM {
         Matrix result = new Matrix(NUM_GENES_ONTOLOGY, NUM_GENES_ONTOLOGY);
 
         //which pair of terms annoating the genes is the most similar
-
         for (int i = 0; i < NUM_GENES_ONTOLOGY; ++i) {
             //get genes annotating the first gene
             final int[] goTerms_i = goIdsPerGene.get(selectedGenes.get(i));
@@ -375,13 +374,15 @@ public abstract class HSM {
     }
 
     protected Matrix calculateGraphGeneWiseSemanticSimilarity(int ontology, GraphSimilarity measure) throws IOException, OutOfMemoryError {
-
+        System.err.println("# of genes: " + this.genes.length);
         // 1.- we get the set of GO terms for every gene
         Map<String, Set<GOTerm>> goTermsPerGene = new HashMap<String, Set<GOTerm>>();
-        for (int g = 0; g < this.genes.length; g++) {
-            String gene = genes[g];
+        for (String gene : this.annotations.getRowIdentifiers()) {
+//        for (int g = 0; g < this.genes.length; g++) {
+            //          String gene = genes[g];
             Set<GOTerm> added = new HashSet<GOTerm>();
-            for (String go : this.goIdsByGene[g]) {
+            for (String go : this.annotations.getGOTermScoresForProteinId(gene).keySet()) {
+                //for (String go : this.goIdsByGene[g]) {
                 if (ontology == getOntologyFromGOTerm(go)) {
                     added.addAll(goTermFromID.get(go).getAncestors());
                 }
