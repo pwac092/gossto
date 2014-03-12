@@ -66,7 +66,7 @@ public abstract class ParameterValidator {
         this.matrixStyle = ISM.MATRIX_STYLE;
     }
 
-    public abstract void validate(IoValidation validate, TinyLogger logger) throws FileNotFoundException, IOException;
+    public abstract void validate(TinyLogger logger) throws FileNotFoundException, IOException;
 
     public String[] getChosenRelations() {
         return chosenRelations;

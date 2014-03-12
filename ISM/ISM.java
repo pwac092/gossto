@@ -99,10 +99,6 @@ public class ISM {
      */
     private boolean useUniProtIds;
     /**
-     * Utilities to make the strings validation
-     */
-    IoValidation validator;
-    /**
      * Logger used to output messages
      */
     TinyLogger logger;
@@ -117,11 +113,11 @@ public class ISM {
 
     /**
      * Empty constructor
+     * @throws java.io.FileNotFoundException
      */
     public ISM() throws FileNotFoundException {
-        validator = new IoValidation(); //input validator.
         logger = new TinyLogger();
-        validator.setLogger(logger);
+        IoValidation.setLogger(logger);
         this.ui = new TerminalInterface();
         ui.welcomer(); //Prints welcome note & GNU GPL info
     }
@@ -138,13 +134,13 @@ public class ISM {
         if (args.length > 0) //If any console parameters entered:
         {
             paramValidator = new ConsoleParameterValidator(args);
-            paramValidator.validate(this.validator, this.logger);
+            paramValidator.validate(this.logger);
             this.setParametersConsole(paramValidator);
 
         } else //Request Parameters using prompt system
         {
             paramValidator = new PromptParameterValidator(ui);
-            paramValidator.validate(this.validator, this.logger);
+            paramValidator.validate(this.logger);
             this.setParametersPrompt(paramValidator);
         }
         AnnotationFile.useUniProtIds(this.useUniProtIds);
@@ -225,9 +221,9 @@ public class ISM {
                 boolean termFound = false;
                 SEARCHING:
                 for (int m = 0; m < 3; m++) {
-                    for (int i = 0; i < matrixAxis[m].length; i++) {
-                        if (id.equals(matrixAxis[m][i].getGOid())) {
-                            goIDsAsGOTerm.add(matrixAxis[m][i]);
+                    for (GOTerm item : matrixAxis[m]) {
+                        if (id.equals(item.getGOid())) {
+                            goIDsAsGOTerm.add(item);
                             termFound = true;
                             break SEARCHING;
                         }
@@ -265,6 +261,7 @@ public class ISM {
     /**
      * Contains the main running instructions for the program, takes console
      * parameters as an array of strings.
+     * @param args arguments of the program
      */
     public static void main(String[] args) {
         try {
@@ -272,14 +269,6 @@ public class ISM {
             //#####Proper Running of Program#####
             ISM ism = new ISM();
 
-            //String selectedEVCodes = "EXP,IDA,IPI,IMP,IGI,IEP,ISS,ISO,ISA,ISM,IGC,IBA,IBD,IKR,IRD,RCA,TAS,NAS";
-            /* String argz[] = {"-obopath", "current.obo", "-goapath",
-             "gene_association.goa_human", "-relations", "is_a,part_of",
-             "-evidencecodes", selectedEVCodes,
-             "-hsm", "Resnik", "-ontology", "all",
-             "-calculationtype", "ism", "-calculationdata", "genewise",
-             "-hsmoutput", "hsm_output", "-ismoutput", "ism_output", "-terms",
-             "all", "-weightedJaccard", "false"};*/
             // 1.- the parameters are validated
             ism.validateParameters(args);
 
@@ -304,7 +293,7 @@ public class ISM {
             System.err.println("ERROR: problem with the Gene Ontology file.");
             System.err.println(ex.getMy_message());
             System.exit(-1);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace(System.err);
             System.exit(-1);
         }
@@ -317,18 +306,15 @@ public class ISM {
         // tells us which GO term are its "parents" following the required
         // relationships (is_a, part_of, ...) that were said to be parsed in the
         // program options
-        //Adjacency[] adjacencies = new Adjacency[3];
-        //adjacencies[0] = gti.getBPAdjacencyMatrix(); //fetch adjacency matrices
-        //adjacencies[1] = gti.getMFAdjacencyMatrix();
-        //adjacencies[2] = gti.getCCAdjacencyMatrix();
         // 2.- HSM computation       
         // 2.1.- Builds an HSM interfacer (to abstract the different HSMs)
-        Object[] params = generateParameters(gti, matrixAxis, goIDsAsGOTerm, validator);
+        Object[] params = generateParameters(gti, matrixAxis);
         HSMInterfacer hsmi = buildsHSMInterfacer(params, new HashSet<GOTerm>(goIDsAsGOTerm), matrixAxis);
         hsmi.retrieveHSMinstance(this.hsmChoice, params);
 
         // 2.2.- Iterate and make the whole process for every desired ontology
         int loopVars[] = this.setLoopVars(dagChoice, logger);
+        SolutionPrinter solutionPrinter = new SolutionPrinter(logger);
         for (int ontology = loopVars[0]; ontology < loopVars[1]; ontology++) {
             // for each ontology...
             // (a) compute HSM
@@ -354,11 +340,11 @@ public class ISM {
             // (b) we print the results of the HSM to a file...            
             logger.showMessage("##### Printing HSM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
             if (this.matrixStyle == ISM.MATRIX_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
-                validator.printResultsToFile(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
+                solutionPrinter.printResultsToFile(ontology, hsmResults, matrixAxis, this.hsmFileName, this.notes, goIDsAsGOTerm, genesRows);
             }
 
             if (this.matrixStyle == ISM.TRIPLET_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
-                validator.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName + "_triplet", this.notes, goIDsAsGOTerm, genesRows);
+                solutionPrinter.printeResultsToFileTripletStyle(ontology, hsmResults, matrixAxis, this.hsmFileName + "_triplet", this.notes, goIDsAsGOTerm, genesRows);
             }
 
             // (c) if we are to compute an ISM...
@@ -382,10 +368,10 @@ public class ISM {
                 logger.showMessage("##### Printing ISM Results to File (" + new String[]{"BP", "MF", "CC"}[ontology] + ") #####");
                 logger.showMemoryUsage();
                 if (this.matrixStyle == ISM.MATRIX_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
-                    validator.printResultsToFile(ontology, ismResults, matrixAxis, this.ismFileName, this.notes, goIDsAsGOTerm, genesRows);
+                    solutionPrinter.printResultsToFile(ontology, ismResults, matrixAxis, this.ismFileName, this.notes, goIDsAsGOTerm, genesRows);
                 }
                 if (this.matrixStyle == ISM.TRIPLET_STYLE || this.matrixStyle == ISM.BOTH_FILES) {
-                    validator.printeResultsToFileTripletStyle(ontology, ismResults, matrixAxis, this.ismFileName + "_triplet", this.notes, goIDsAsGOTerm, genesRows);
+                    solutionPrinter.printeResultsToFileTripletStyle(ontology, ismResults, matrixAxis, this.ismFileName + "_triplet", this.notes, goIDsAsGOTerm, genesRows);
                 }
             }
 
@@ -409,7 +395,7 @@ public class ISM {
         return hsmi;
     }
 
-    private Object[] generateParameters(GOtreeInterfacer gti, GOTerm[][] matrixAxis, ArrayList<GOTerm> goIDsAsGOTerm, IoValidation validate) {
+    private Object[] generateParameters(GOtreeInterfacer gti, GOTerm[][] matrixAxis) {
         //Create array of all GO terms
         GOTerm[] allterms = new GOTerm[matrixAxis[0].length + matrixAxis[1].length + matrixAxis[2].length];
         int counter = 0;

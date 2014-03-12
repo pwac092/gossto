@@ -48,7 +48,7 @@ public class Lin extends HSM {
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
-                float linTop = (float) -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
+                float linTop = 0.0f - (float) Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
                 result.set(i, j, linTop);
                 result.set(j, i, linTop);
 

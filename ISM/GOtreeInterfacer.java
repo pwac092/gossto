@@ -48,10 +48,9 @@ public class GOtreeInterfacer {
     private Assignment annotations; //the mapping of the annotations to the GO terms
     private GOTerm[] bpAxisOrd, mfAxisOrd, ccAxisOrd; //The axis for the adjacency matrices
     private String[][] goIDsByGene; //Listing of GO IDs that a gene is annotated to
-    private HashMap<GOTerm, Double> weightedAnnotations; //Contains the weighted annotation mappings used for calculating HSM results to be used for calculating ISM results
-    private TinyLogger logwriter;//Used for writing messages to the log file
+    private final HashMap<GOTerm, Double> weightedAnnotations; //Contains the weighted annotation mappings used for calculating HSM results to be used for calculating ISM results
+    private final TinyLogger logwriter;//Used for writing messages to the log file
     Set<String> ontologiesToProcess;
-    private HashMap<Integer, Integer> numAnnotations = new HashMap<Integer, Integer>();
 
     //All methods are called from this constructor as no user interaction is required.
     //'OBOpath' contains the file path for the OBO file, 'annoPath' contains the file path for the GOA file, 'relations' contains the GO relations we are using, 'evidenceCodes' contains
@@ -178,7 +177,6 @@ public class GOtreeInterfacer {
                 //set adjacencies' values ontology by ontology
                 logwriter.showMessage("Creating BP adjacency");
 
-                int currentIndex = 0;
                 for (GOTerm term : this.bpAxisOrd) { //for all the goterms
                     for (String rel : GO_relations) { //check for all relations
                         for (GOTerm parent : term.getParentsForRelation(rel)) { //get all the parents
@@ -195,7 +193,6 @@ public class GOtreeInterfacer {
                             //}
                         }
                     }
-                    currentIndex++;
                 }
 
             } else if (ontology.trim().equalsIgnoreCase("MF")) {
@@ -217,7 +214,6 @@ public class GOtreeInterfacer {
                 //set adjacencies' values ontology by ontology
                 logwriter.showMessage("Creating MF adjacency");
 
-                int currentIndex = 0;
                 for (GOTerm term : this.mfAxisOrd) {
                     for (String rel : GO_relations) {
                         for (GOTerm parent : term.getParentsForRelation(rel)) {
@@ -232,7 +228,6 @@ public class GOtreeInterfacer {
                             }
                         }
                     }
-                    currentIndex++;
                 }
 
             } else if (ontology.trim().equalsIgnoreCase("CC")) {
@@ -251,7 +246,6 @@ public class GOtreeInterfacer {
                 //set adjacencies' values ontology by ontology
                 logwriter.showMessage("Creating CC adjacency");
 
-                int currentIndex = 0;
                 for (GOTerm term : this.ccAxisOrd) {
                     for (String rel : GO_relations) {
                         for (GOTerm parent : term.getParentsForRelation(rel)) {
@@ -266,7 +260,6 @@ public class GOtreeInterfacer {
                             }
                         }
                     }
-                    currentIndex++;
                 }
 
             }
@@ -305,79 +298,19 @@ public class GOtreeInterfacer {
 
     }
 
-    private int getNumAnnotationsForGOTerm(GOTerm term) {
-        final int numId = term.getNumericId();
-        if (this.numAnnotations.containsKey(numId)) {
-            return this.numAnnotations.get(numId);
-        } else {
-            int num = this.annotations.countNumberOfGenesForGOTerm(term.getGOid());
-            this.numAnnotations.put(numId, num);
-            return num;
-        }
-    }
-
-    //remove columns and rows of terms without annotations for the matrix 'adjacency' with the axis 'axis'
-    /*
-    private Adjacency stripDownAdjacency(Adjacency adjacency, GOTerm[] axis) {
-
-        //get number of terms with annotations
-        final int n = adjacency.getRowDimension();
-        Set<Integer> interesting = new HashSet<Integer>();
-
-        for (int i = 0; i < n; i++) {
-            //if (annotations.countNumberOfGenesForGOTerm(axis[i].getGOid()) != 0) {
-            if (this.getNumAnnotationsForGOTerm(axis[i]) != 0) {
-                //counter++;
-                interesting.add(i);
-            }
-        }
-        final int counter = interesting.size();
-
-        if (counter > 0) {
-
-            Adjacency stripped = new Adjacency(counter, counter);
-            //strip matrix down
-            int rowIndex = 0;
-            //final int m = adjacency.getColumnDimension();
-            for (int i : interesting) {
-                int columnIndex = 0;
-                //if (annotations.countNumberOfGenesForGOTerm(axis[i].getGOid()) != 0) {
-                //if (this.getNumAnnotationsForGOTerm(axis[i]) != 0) {
-                //for (int j = 0; j < m; j++) {
-                for (int j : interesting) {
-                    //if (this.getNumAnnotationsForGOTerm(axis[j]) != 0) {
-                    //if (annotations.countNumberOfGenesForGOTerm(axis[j].getGOid()) != 0) {                
-                    stripped.setEntry(rowIndex, columnIndex, adjacency.getEntry(i, j));
-                    columnIndex++;
-                    //}
-                }
-                rowIndex++;
-                //}
-            }
-            return stripped;
-        } else {
-            return null;
-        }
-    }
-     * 
-     */
-    //remove terms from the axis that don't have annotations for the axis; 'axis'
-
     private GOTerm[] stripDownAxis(GOTerm[] axis) {
         GOTerm[] stripped;
         int counter = 0;
-        //get number of terms with annotations
-        for (int i = 0; i < axis.length; i++) {
-            if (annotations.countNumberOfGenesForGOTerm(axis[i].getGOid()) != 0) {
+        for (GOTerm axi : axis) {
+            if (annotations.countNumberOfGenesForGOTerm(axi.getGOid()) != 0) {
                 counter++;
             }
         }
         stripped = new GOTerm[counter];
         counter = 0;
-        //remove the terms without annotations
-        for (int i = 0; i < axis.length; i++) {
-            if (annotations.countNumberOfGenesForGOTerm(axis[i].getGOid()) != 0) {
-                stripped[counter] = axis[i];
+        for (GOTerm axi : axis) {
+            if (annotations.countNumberOfGenesForGOTerm(axi.getGOid()) != 0) {
+                stripped[counter] = axi;
                 counter++;
             }
         }
@@ -430,19 +363,6 @@ public class GOtreeInterfacer {
     public GOTerm[] getCCaxis() {
         return this.ccAxisOrd;
     }
-
-    /*
-    public Adjacency getBPAdjacencyMatrix() {
-        return this.BPAdjacencyMatrix;
-    }
-
-    public Adjacency getCCAdjacencyMatrix() {
-        return this.CCAdjacencyMatrix;
-    }
-
-    public Adjacency getMFAdjacencyMatrix() {
-        return this.MFAdjacencyMatrix;
-    }*/
 
     public String[] getGO_relations() {
         return this.GO_relations;

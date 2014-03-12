@@ -32,24 +32,24 @@ public class PromptParameterValidator extends ParameterValidator {
     }
 
     @Override
-    public void validate(IoValidation validate, TinyLogger logger) throws FileNotFoundException, IOException {
+    public void validate(TinyLogger logger) throws FileNotFoundException, IOException {
         this.oboFile = ui.requestOBOfile(); //OBO file path
         this.notes.add(this.oboFile);
         this.goaFile = ui.requestGOAfile(); //GOA file path
         this.notes.add(this.goaFile);
-        validate.validateFilePaths(this.oboFile, this.goaFile);
+        IoValidation.validateFilePaths(this.oboFile, this.goaFile);
         this.chosenRelations = ui.requestRelations(); //GO Relations
         String temp = "";
         for (String rel : this.chosenRelations) {
             temp += rel + " ";
         }
         this.notes.add(temp);
-        validate.validateRelations(this.chosenRelations);
+        IoValidation.validateRelations(this.chosenRelations);
         this.evidenceCodes = ui.requestEvidenceCodes(); //Evidence Codes
         for (int i = 0; i < this.evidenceCodes.length; i++) {
             this.evidenceCodes[i] = this.evidenceCodes[i].toUpperCase(); //needed as upper case for parsing
         }
-        validate.validateEvidenceCodes(this.evidenceCodes);
+        IoValidation.validateEvidenceCodes(this.evidenceCodes);
         temp = "";
         for (String eviC : this.evidenceCodes) {
             temp += eviC + " ";
@@ -74,7 +74,7 @@ public class PromptParameterValidator extends ParameterValidator {
         this.notes.add(this.hsmChoice);
 
         //GET THE DESIRED ONTOLOGY
-        this.dagChoice = validate.validateDagChoice(ui.requestDAG()); //Choice of GO Ontology
+        this.dagChoice = IoValidation.validateDagChoice(ui.requestDAG()); //Choice of GO Ontology
         this.notes.add(this.dagChoice);
         if (this.termWise == false) {
             this.geneIDs = ui.requestGeneIDs(); //Request any specific Gene IDs
@@ -90,9 +90,9 @@ public class PromptParameterValidator extends ParameterValidator {
         } else {
             this.notes.add("ISM");
             this.hsmFileName = ui.requestFileName(true); //Request HSM name & file path
-            validate.validateOutputLocation(this.hsmFileName);
+            IoValidation.validateOutputLocation(this.hsmFileName);
             this.ismFileName = ui.requestFileName(false); //Request ISM name & file path
-            validate.validateOutputLocation(this.ismFileName);
+            IoValidation.validateOutputLocation(this.ismFileName);
         }
 
         if (this.termWise == true) {

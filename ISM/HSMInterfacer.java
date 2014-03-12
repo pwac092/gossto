@@ -38,7 +38,7 @@ public class HSMInterfacer {
     /**
      * Used for writing messages to the log file
      */
-    private TinyLogger logwriter;
+    private final TinyLogger logwriter;
     /**
      * Stores retrieved HSM instance
      */

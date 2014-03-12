@@ -26,7 +26,7 @@ import java.util.Set;
 //Deals with user interaction. Prompts user for input parameters
 public class TerminalInterface {
 
-    private Scanner userInput; //reads user inputed values from the command line / console
+    private final Scanner userInput; //reads user inputed values from the command line / console
 
     //instantiates the scanner variable
     TerminalInterface() {

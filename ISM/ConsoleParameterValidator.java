@@ -38,7 +38,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
     }
 
     @Override
-    public void validate(IoValidation validate, TinyLogger logger) throws FileNotFoundException, IOException {
+    public void validate(TinyLogger logger) throws FileNotFoundException, IOException {
         CommandLineParser parser = new GnuParser();
         CommandLine cmd;
         HelpFormatter formatter = new HelpFormatter();
@@ -125,7 +125,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
                 System.err.println("ERROR: GOA Path Not Specified");
                 System.exit(-1);
             }
-            validate.validateFilePaths(this.oboFile, this.goaFile);
+            IoValidation.validateFilePaths(this.oboFile, this.goaFile);
             if (cmd.hasOption("relations")) //GO Relations
             {
                 String rawRelations = cmd.getOptionValue("relations");
@@ -136,7 +136,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
                     temp += this.chosenRelations[i] + " ";
                 }
                 this.notes.add(temp);
-                validate.validateRelations(this.chosenRelations);
+                IoValidation.validateRelations(this.chosenRelations);
             } else {
                 logger.logAndCloseWriter("############ ERROR: Go relations not specified");
                 System.err.println("ERROR: GO Relations Not Specified");
@@ -152,7 +152,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
                     temp += this.evidenceCodes[i] + " ";
                 }
                 this.notes.add(temp);
-                validate.validateEvidenceCodes(this.evidenceCodes);
+                IoValidation.validateEvidenceCodes(this.evidenceCodes);
             } else {
                 logger.logAndCloseWriter("############ ERROR: Evidence codes not specified");
                 System.err.println("ERROR: Evidence Codes Not Specified");
@@ -170,7 +170,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
             if (cmd.hasOption("ontology")) //GO Ontology choice
             {
                 this.dagChoice = cmd.getOptionValue("ontology").toLowerCase();
-                this.dagChoice = validate.validateDagChoice(dagChoice);
+                this.dagChoice = IoValidation.validateDagChoice(dagChoice);
                 this.notes.add(this.dagChoice);
             } else {
                 logger.logAndCloseWriter("############ ERROR: Ontology not specified");
@@ -237,7 +237,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
             if (cmd.hasOption("hsmoutput")) //HSM output file path & name
             {
                 this.hsmFileName = cmd.getOptionValue("hsmoutput");
-                validate.validateOutputLocation(this.hsmFileName);
+                IoValidation.validateOutputLocation(this.hsmFileName);
             } else {
                 logger.logAndCloseWriter("############ ERROR: No output path for HSM");
                 System.err.println("ERROR: HSM Output Path Not Specified");
@@ -247,7 +247,7 @@ public class ConsoleParameterValidator extends ParameterValidator {
             if (cmd.hasOption("ismoutput")) //ISM output file path and name
             {
                 this.ismFileName = cmd.getOptionValue("ismoutput");
-                validate.validateOutputLocation(this.ismFileName);
+                IoValidation.validateOutputLocation(this.ismFileName);
             } else if (this.ismChoice == true) {
                 logger.logAndCloseWriter("############ ERROR: No output path for ISM");
                 System.err.println("ERROR: ISM Output Path Not Specified");

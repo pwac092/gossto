@@ -47,7 +47,7 @@ public class Jiang extends HSM {
 
         for (int i = 0; i < N; i++) {
             for (int j = i; j < N; j++) {
-                float dJiang = (float) -Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
+                float dJiang = 0.0f - (float) Math.log(lowestCommonAncestor(matrixAxis[ontology][i].getAncestors(), matrixAxis[ontology][j].getAncestors(), ontology));
                 result.set(i, j, dJiang);
                 result.set(j, i, dJiang);
                 M = Math.max(M, dJiang);
