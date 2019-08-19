@@ -2,3 +2,6 @@ build/*
 build
 lib/*
 lib
+*.class
+.*.swp
+*~
