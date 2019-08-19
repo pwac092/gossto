@@ -1,0 +1,6 @@
+<ivy-module version="2.0">
+    <info organisation="org.apache" module="Gossto" />
+	<dependencies>
+        <dependency org="commons-cli" name="commons-cli" rev="1.4"/>
+	</dependencies>
+</ivy-module>

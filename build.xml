@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant"
+    name="Gossto" default="default" basedir=".">
+    <description>Builds, tests, and runs the project Gossto.</description>
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+	<property name="projectName" value="Gossto" />
+	<property name="lib" value="lib" />
+    <!-- The main class, where public static void main(String... is -->
+    <property name="Main.class" value="ISM.ISM"/>
+
+    <path id="classpath">
+        <fileset dir="${lib}">
+            <include name="**/*.jar" />
+        </fileset>
+        <pathelement location="${build}" />
+    </path>
+
+
+   	<!-- ivy start -->
+	<!-- ivy to get dependencies and copy to project lib folder automatically -->
+	<target name="resolve" description="retrieve dependencies with ivy" depends="ivy">
+		<ivy:retrieve />
+	</target>
+
+	<!-- install ivy -->
+	<target name="ivy" description="Install ivy">
+		<mkdir dir="${user.home}/.ant/lib" />
+		<get dest="${user.home}/.ant/lib/ivy.jar" 
+			src="http://search.maven.org/remotecontent?filepath=org/apache/ivy/ivy/2.4.0-rc1/ivy-2.4.0-rc1.jar" />
+	</target>
+	<!-- ivy end -->
+
+  <target name="init" depends="resolve">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="build" depends="init" 
+        description="compile the source">
+    <!-- Compile the Java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}"
+           classpathref="classpath"/>
+  </target>
+
+  <target name="jar" depends="build"
+        description="generate the distribution">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/"/>
+
+    <jar jarfile="${dist}/Gossto.jar" basedir="${build}">
+        <zipgroupfileset dir="${dist}" includes="*.jar"/>
+        <zipgroupfileset dir="${lib}" includes="*.jar"/>
+
+        <manifest>
+            <attribute name="Main-Class" value="${Main.class}"/>
+            <attribute name="Class-Path" value="classpath"/>
+        </manifest>
+    </jar>
+  </target>
+
+  <target name="clean" description="clean up">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+</project>
